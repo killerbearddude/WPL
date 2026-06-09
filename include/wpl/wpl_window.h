@@ -12,6 +12,7 @@ extern "C" {
 /* Opaque platform window handle. The concrete backend state is private. */
 typedef struct WplWindow WplWindow;
 
+/* Basic window creation parameters for the Linux/X11 v0.1 backend. */
 typedef struct WplWindowDesc {
   const char* title;
   int width;
@@ -19,13 +20,28 @@ typedef struct WplWindowDesc {
   bool resizable;
 } WplWindowDesc;
 
+/* Create one Linux/X11 window. v0.1 supports only one active window. */
 WplResult wpl_create_window(const WplWindowDesc* desc, WplWindow** out_window);
+
+/* Destroy a window and release backend-owned resources. Accepts NULL. */
 void wpl_destroy_window(WplWindow* window);
+
+/* Return true for NULL or for a window that has received/requested close. */
 bool wpl_window_should_close(const WplWindow* window);
+
+/* Mark the window as closing without sending a backend event. */
 WplResult wpl_window_request_close(WplWindow* window);
+
+/* Begin a frame: compute delta time and reset transient input fields. */
 WplResult wpl_begin_frame(WplWindow* window);
+
+/* Pump all pending platform events into the current frame state. */
 WplResult wpl_pump_events(WplWindow* window);
+
+/* End a frame. Presentation is currently a backend-safe no-op. */
 WplResult wpl_end_frame(WplWindow* window);
+
+/* Return current window dimensions, or zero for NULL. */
 int wpl_window_width(const WplWindow* window);
 int wpl_window_height(const WplWindow* window);
 

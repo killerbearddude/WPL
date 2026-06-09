@@ -10,6 +10,8 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
+find_package(X11 REQUIRED)
+
 enable_testing()
 
 add_library(wpl_core STATIC
@@ -38,6 +40,13 @@ target_include_directories(wpl_linux_x11
     ${CMAKE_CURRENT_SOURCE_DIR}/include
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/backends/linux_x11
+    ${X11_INCLUDE_DIR}
+)
+
+target_link_libraries(wpl_linux_x11
+  PRIVATE
+    wpl_core
+    ${X11_LIBRARIES}
 )
 
 add_library(wpl INTERFACE)
@@ -50,3 +59,5 @@ foreach(wpl_target IN ITEMS wpl_core wpl_linux_x11)
     -Wpedantic
   )
 endforeach()
+
+add_subdirectory(examples/00_empty_window)
