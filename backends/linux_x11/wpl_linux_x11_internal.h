@@ -63,6 +63,7 @@ void wpl_linux_x11_handle_key_press(WplWindow* window,
 void wpl_linux_x11_handle_key_release(WplWindow* window,
                                       XKeyEvent* event);
 
+void wpl_linux_x11_destroy_renderer_resources(WplWindow* window);
 WplResult wpl_linux_x11_present_frame(WplWindow* window);
 
 #endif /* WPL_LINUX_X11_INTERNAL_H */
