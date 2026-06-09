@@ -24,10 +24,16 @@ system.
 
 ## Current patch state
 
-This repository is currently bootstrapped as a source foundation only. The X11
-window lifecycle, event pump, input translation, software renderer, file I/O,
-debug overlay, and replay implementation are intentionally deferred to later
-patches.
+The repository includes the initial source foundation, Linux/X11 window
+lifecycle, event pump, and frame-stable input snapshots. Software rendering,
+file I/O, debug overlay, canvas behavior, and replay implementation are
+intentionally deferred to later focused patches.
+
+## Examples
+
+- `examples/00_empty_window` opens and closes a basic X11 window.
+- `examples/01_input_snapshot` prints keyboard, mouse, wheel, and modifier
+  transitions from `WplInputState`.
 
 ## Build
 

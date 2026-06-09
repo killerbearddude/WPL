@@ -4,9 +4,9 @@
 /*
  * Linux/X11 backend-private boundary.
  *
- * Xlib types and concrete backend ownership live here, behind the public
- * WplWindow opaque handle. Public headers under include/wpl/ must never
- * include this file or expose these backend-specific types.
+ * Xlib and XKB types live here, behind the public WplWindow opaque handle.
+ * Public headers under include/wpl/ must never include this file or expose
+ * backend-specific handles, atoms, events, key symbols, or visuals.
  */
 
 #include <stdbool.h>
@@ -15,6 +15,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/XKBlib.h>
 
 #include "wpl/wpl_input.h"
 #include "wpl/wpl_result.h"
@@ -47,8 +48,21 @@ struct WplWindow {
   bool xkb_detectable_auto_repeat_enabled;
 };
 
-void wpl_linux_x11_reset_transient_input(WplInputState* input);
-void wpl_linux_x11_clear_held_input(WplInputState* input);
+void wpl_linux_x11_reset_transient_input(WplWindow* window);
+void wpl_linux_x11_clear_input_down_state(WplWindow* window);
+void wpl_linux_x11_init_detectable_auto_repeat(WplWindow* window);
+
+void wpl_linux_x11_handle_motion(WplWindow* window,
+                                 const XMotionEvent* event);
+void wpl_linux_x11_handle_button_press(WplWindow* window,
+                                       const XButtonEvent* event);
+void wpl_linux_x11_handle_button_release(WplWindow* window,
+                                         const XButtonEvent* event);
+void wpl_linux_x11_handle_key_press(WplWindow* window,
+                                    XKeyEvent* event);
+void wpl_linux_x11_handle_key_release(WplWindow* window,
+                                      XKeyEvent* event);
+
 WplResult wpl_linux_x11_present_frame(WplWindow* window);
 
 #endif /* WPL_LINUX_X11_INTERNAL_H */
