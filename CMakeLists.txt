@@ -122,3 +122,18 @@ target_compile_options(wpl_test_file_io PRIVATE
   -Wpedantic
 )
 add_test(NAME wpl_test_file_io COMMAND wpl_test_file_io)
+
+add_executable(wpl_test_replay_format
+  tests/test_replay_format.c
+)
+target_include_directories(wpl_test_replay_format
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+target_link_libraries(wpl_test_replay_format PRIVATE wpl_core)
+target_compile_options(wpl_test_replay_format PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_replay_format COMMAND wpl_test_replay_format)
