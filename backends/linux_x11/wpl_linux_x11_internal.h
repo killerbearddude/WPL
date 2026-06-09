@@ -52,6 +52,15 @@ void wpl_linux_x11_reset_transient_input(WplWindow* window);
 void wpl_linux_x11_clear_input_down_state(WplWindow* window);
 void wpl_linux_x11_init_detectable_auto_repeat(WplWindow* window);
 
+void wpl_linux_x11_input_reset_transients(WplInputState* input);
+void wpl_linux_x11_input_clear_down_state(WplInputState* input);
+void wpl_linux_x11_input_press_mouse_button(WplInputState* input,
+                                           WplMouseButton button);
+void wpl_linux_x11_input_release_mouse_button(WplInputState* input,
+                                             WplMouseButton button);
+void wpl_linux_x11_input_press_key(WplInputState* input, WplKey key);
+void wpl_linux_x11_input_release_key(WplInputState* input, WplKey key);
+
 void wpl_linux_x11_handle_motion(WplWindow* window,
                                  const XMotionEvent* event);
 void wpl_linux_x11_handle_button_press(WplWindow* window,

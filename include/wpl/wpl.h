@@ -11,6 +11,7 @@
 #include "wpl_file.h"
 #include "wpl_replay.h"
 #include "wpl_debug.h"
+#include "wpl_log.h"
 
 #ifdef __cplusplus
 extern "C" {

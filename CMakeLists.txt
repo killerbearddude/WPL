@@ -28,6 +28,7 @@ add_library(wpl_core STATIC
   src/wpl_file.c
   src/wpl_replay.c
   src/wpl_debug.c
+  src/wpl_log.c
 )
 
 target_include_directories(wpl_core
@@ -71,11 +72,17 @@ endforeach()
 add_subdirectory(examples/00_empty_window)
 add_subdirectory(examples/01_input_snapshot)
 add_subdirectory(examples/02_draw_primitives)
+add_subdirectory(examples/03_canvas_pan_zoom)
 add_subdirectory(examples/04_debug_overlay)
 add_subdirectory(examples/05_input_replay)
 
 add_executable(wpl_test_input_state
   tests/test_input_state.c
+)
+target_include_directories(wpl_test_input_state
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/backends/linux_x11
+    ${X11_INCLUDE_DIR}
 )
 target_link_libraries(wpl_test_input_state PRIVATE wpl)
 target_compile_options(wpl_test_input_state PRIVATE
@@ -159,6 +166,17 @@ target_compile_options(wpl_test_replay PRIVATE
   -Wpedantic
 )
 add_test(NAME wpl_test_replay COMMAND wpl_test_replay)
+
+add_executable(wpl_test_log
+  tests/test_log.c
+)
+target_link_libraries(wpl_test_log PRIVATE wpl_core)
+target_compile_options(wpl_test_log PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_log COMMAND wpl_test_log)
 
 add_executable(wpl_test_public_headers
   tests/test_public_headers.c

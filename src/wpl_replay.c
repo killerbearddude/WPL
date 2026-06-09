@@ -205,7 +205,7 @@ wpl_replay_decode_header_v1(const uint8_t* data,
 
   header_size = wpl_replay_read_u32_le(
     &data[WPL_REPLAY_HEADER_OFFSET_HEADER_SIZE]);
-  if (header_size < WPL_REPLAY_HEADER_SIZE_V1)
+  if (header_size != WPL_REPLAY_HEADER_SIZE_V1)
     return WPL_RESULT_PARSE_ERROR;
 
   frame_size = wpl_replay_read_u32_le(

@@ -203,17 +203,16 @@ wpl_linux_x11_is_synthetic_repeat_release(WplWindow* window,
   return true;
 }
 
+
 void
-wpl_linux_x11_reset_transient_input(WplWindow* window)
+wpl_linux_x11_input_reset_transients(WplInputState* input)
 {
-  WplInputState* input;
   int button_index;
   int key_index;
 
-  if (window == NULL)
+  if (input == NULL)
     return;
 
-  input = &window->input;
   input->mouse.delta.x = 0.0f;
   input->mouse.delta.y = 0.0f;
   input->mouse.wheel_delta = 0.0f;
@@ -232,16 +231,14 @@ wpl_linux_x11_reset_transient_input(WplWindow* window)
 }
 
 void
-wpl_linux_x11_clear_input_down_state(WplWindow* window)
+wpl_linux_x11_input_clear_down_state(WplInputState* input)
 {
-  WplInputState* input;
   int button_index;
   int key_index;
 
-  if (window == NULL)
+  if (input == NULL)
     return;
 
-  input = &window->input;
   for (button_index = 0; button_index < WPL_MOUSE_BUTTON_COUNT; ++button_index)
     input->mouse.button_down[button_index] = false;
 
@@ -251,6 +248,74 @@ wpl_linux_x11_clear_input_down_state(WplWindow* window)
   input->keyboard.shift_down = false;
   input->keyboard.ctrl_down = false;
   input->keyboard.alt_down = false;
+}
+
+void
+wpl_linux_x11_input_press_mouse_button(WplInputState* input,
+                                       WplMouseButton button)
+{
+  if (input == NULL || button < 0 || button >= WPL_MOUSE_BUTTON_COUNT)
+    return;
+
+  if (!input->mouse.button_down[button])
+    input->mouse.button_pressed[button] = true;
+
+  input->mouse.button_down[button] = true;
+}
+
+void
+wpl_linux_x11_input_release_mouse_button(WplInputState* input,
+                                         WplMouseButton button)
+{
+  if (input == NULL || button < 0 || button >= WPL_MOUSE_BUTTON_COUNT)
+    return;
+
+  if (input->mouse.button_down[button])
+    input->mouse.button_released[button] = true;
+
+  input->mouse.button_down[button] = false;
+}
+
+void
+wpl_linux_x11_input_press_key(WplInputState* input, WplKey key)
+{
+  if (input == NULL || key <= WPL_KEY_UNKNOWN || key >= WPL_KEY_COUNT)
+    return;
+
+  if (!input->keyboard.key_down[key])
+    input->keyboard.key_pressed[key] = true;
+
+  input->keyboard.key_down[key] = true;
+}
+
+void
+wpl_linux_x11_input_release_key(WplInputState* input, WplKey key)
+{
+  if (input == NULL || key <= WPL_KEY_UNKNOWN || key >= WPL_KEY_COUNT)
+    return;
+
+  if (input->keyboard.key_down[key])
+    input->keyboard.key_released[key] = true;
+
+  input->keyboard.key_down[key] = false;
+}
+
+void
+wpl_linux_x11_reset_transient_input(WplWindow* window)
+{
+  if (window == NULL)
+    return;
+
+  wpl_linux_x11_input_reset_transients(&window->input);
+}
+
+void
+wpl_linux_x11_clear_input_down_state(WplWindow* window)
+{
+  if (window == NULL)
+    return;
+
+  wpl_linux_x11_input_clear_down_state(&window->input);
 }
 
 void
@@ -315,10 +380,7 @@ wpl_linux_x11_handle_button_press(WplWindow* window,
   if (button == WPL_MOUSE_BUTTON_COUNT)
     return;
 
-  if (!window->input.mouse.button_down[button])
-    window->input.mouse.button_pressed[button] = true;
-
-  window->input.mouse.button_down[button] = true;
+  wpl_linux_x11_input_press_mouse_button(&window->input, button);
 }
 
 void
@@ -340,10 +402,7 @@ wpl_linux_x11_handle_button_release(WplWindow* window,
   if (button == WPL_MOUSE_BUTTON_COUNT)
     return;
 
-  if (window->input.mouse.button_down[button])
-    window->input.mouse.button_released[button] = true;
-
-  window->input.mouse.button_down[button] = false;
+  wpl_linux_x11_input_release_mouse_button(&window->input, button);
 }
 
 void
@@ -363,10 +422,7 @@ wpl_linux_x11_handle_key_press(WplWindow* window, XKeyEvent* event)
   if (key == WPL_KEY_UNKNOWN)
     return;
 
-  if (!window->input.keyboard.key_down[key])
-    window->input.keyboard.key_pressed[key] = true;
-
-  window->input.keyboard.key_down[key] = true;
+  wpl_linux_x11_input_press_key(&window->input, key);
 }
 
 void
@@ -389,10 +445,7 @@ wpl_linux_x11_handle_key_release(WplWindow* window, XKeyEvent* event)
   if (key == WPL_KEY_UNKNOWN)
     return;
 
-  if (window->input.keyboard.key_down[key])
-    window->input.keyboard.key_released[key] = true;
-
-  window->input.keyboard.key_down[key] = false;
+  wpl_linux_x11_input_release_key(&window->input, key);
 }
 
 WplInputState
