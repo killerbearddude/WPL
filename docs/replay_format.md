@@ -32,8 +32,21 @@ microseconds, mouse state, key state, modifier state, and reserved bytes. Public
 C structs are decoded into and encoded from field values explicitly; `sizeof` is
 not part of the file format contract.
 
-## Deferred
+## Recorder / Player
 
-Live recorder/player state, replay file save/load orchestration, replay UI,
-version migration, compression, and editor-command replay are deferred to later
-focused patches.
+The replay recorder stores `WplInputState` snapshots and frame delta timing at
+the platform/input boundary.  Delta time is converted to microseconds and an
+accumulated replay timestamp is stored per frame.
+
+Saving a recorder encodes the v1 header and frames explicitly, then writes the
+result through WPL file I/O.  Loading a player reads through WPL file I/O,
+validates the full file, decodes every frame, and only replaces previously
+loaded replay state after a complete successful decode.
+
+Playback returns input snapshots and delta time in order.  After the final frame,
+`wpl_replay_player_next` returns success with `out_has_frame = false`, zeroed
+input, and zero delta time.
+
+Replay does not record editor commands, application state, simulation state, X11
+event streams, or raw C structs.  Replay UI controls, debug overlay replay state,
+version migration, compression, and editor-command replay remain out of scope.
