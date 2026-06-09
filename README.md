@@ -27,9 +27,9 @@ system.
 The repository includes the initial source foundation, Linux/X11 window
 lifecycle, event pump, frame-stable input snapshots, fixed-capacity draw
 command buffers, and software renderer support for clear, filled rectangles,
-rectangle outlines, thick lines, and filled circles. File I/O, debug overlay,
-canvas behavior, text rendering, and replay implementation are intentionally
-deferred to later focused patches.
+rectangle outlines, thick lines, filled circles, and printable ASCII bitmap
+text. File I/O, debug overlay, canvas behavior, and replay implementation are
+intentionally deferred to later focused patches.
 
 ## Examples
 
@@ -37,7 +37,8 @@ deferred to later focused patches.
 - `examples/01_input_snapshot` prints keyboard, mouse, wheel, and modifier
   transitions from `WplInputState`.
 - `examples/02_draw_primitives` renders a clear background, filled rectangles,
-  rectangle outlines, thick lines, and filled circles with the software renderer.
+  rectangle outlines, thick lines, filled circles, and ASCII bitmap text with
+  the software renderer.
 
 ## Build
 

@@ -33,6 +33,7 @@ add_library(wpl_linux_x11 STATIC
   backends/linux_x11/wpl_linux_x11_window.c
   backends/linux_x11/wpl_linux_x11_input.c
   backends/linux_x11/wpl_linux_x11_renderer.c
+  backends/linux_x11/wpl_linux_x11_font.c
 )
 
 target_include_directories(wpl_linux_x11
