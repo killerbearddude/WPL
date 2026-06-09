@@ -6,6 +6,28 @@ layer for canvas-heavy custom UI foundations and future node graph tools.
 WPL owns platform interaction and low-level service infrastructure. Higher-level
 application code owns UI behavior, editor behavior, and node graph semantics.
 
+## Current status
+
+WPL is a v0.1 candidate foundation. The repository currently includes:
+
+- X11 window lifecycle and event pump
+- Frame-stable input snapshots
+- Monotonic timing and frame delta tracking
+- Fixed-capacity draw command buffer
+- Software renderer
+- Basic 2D primitives
+- ASCII bitmap text
+- Canvas math
+- Debug overlay
+- File I/O
+- Replay v1 binary format
+- Replay recorder/player
+- Input replay example
+- Ubuntu CI workflow
+
+See `docs/release_checklist.md` and `docs/api_review.md` for the v0.1 readiness
+review.
+
 ## Scope
 
 - Linux only.
@@ -19,19 +41,36 @@ application code owns UI behavior, editor behavior, and node graph semantics.
 
 ## Non-goals
 
-WPL is not a game engine, GUI toolkit, widget library, layout engine, node graph
-editor, SDL wrapper, Wayland abstraction, Windows/macOS layer, GPU abstraction,
-ECS, scene graph, asset pipeline, or application-specific editor framework.
+WPL deliberately does not provide:
 
-## Build requirements
+- SDL support.
+- Wayland support.
+- Windows or macOS support.
+- GPU abstraction.
+- OpenGL, Vulkan, EGL, GLX, Metal, or DirectX abstraction.
+- GUI widgets.
+- Layout system.
+- Node graph logic.
+- Scene graph.
+- ECS.
+- Asset pipeline.
+- Application-specific editor logic.
 
-- Linux
-- CMake 3.16 or newer
-- C11 compiler such as GCC or Clang
-- X11 development headers and libraries
+## Requirements
+
+- Linux.
+- CMake 3.16 or newer.
+- C11 compiler such as GCC or Clang.
+- X11 development headers and libraries.
 
 A C++ compiler is optional and is used only for public-header include smoke
 coverage when available.
+
+On Ubuntu-like systems:
+
+```sh
+sudo apt-get install build-essential cmake libx11-dev
+```
 
 ## Build
 
@@ -53,19 +92,18 @@ ctest --test-dir build --output-on-failure
 ./scripts/check_no_backend_leaks.sh
 ```
 
-
 ## Continuous Integration
 
-Pull requests and pushes to `main` are validated on Ubuntu with CMake, GCC,
-the X11 development headers, public-header smoke tests, backend-leak checks,
-and CTest.
+Pull requests and pushes to `main` are validated on Ubuntu with CMake, GCC, the
+X11 development headers, public-header smoke tests, backend-leak checks, and
+CTest.
 
 CI builds the library, tests, and examples. It does not run graphical examples
 because they require a display server.
 
 ## Examples
 
-After building, examples are available under `build/examples/`:
+After building, examples are available under `build/examples/`.
 
 - `00_empty_window/wpl_empty_window` opens and closes a basic X11 window.
 - `01_input_snapshot/wpl_input_snapshot` prints keyboard, mouse, wheel, and
@@ -92,6 +130,8 @@ Play it back:
 The input replay example records input snapshots only. It does not replay raw
 X11 events, editor commands, application state, widgets, or node graph behavior.
 
+More example notes are in `docs/examples.md`.
+
 ## Public API include style
 
 Applications should include the umbrella header unless they intentionally need a
@@ -104,25 +144,26 @@ narrow module header:
 Public headers are C-compatible and backend-clean. They do not expose X11 types,
 file descriptors, XImage ownership, renderer internals, or replay binary structs.
 
-## Implemented modules
-
-- X11 window lifecycle and event pump
-- Frame-stable input snapshots
-- Monotonic timing and frame delta tracking
-- Fixed-capacity draw command buffer
-- Software renderer with clear, rectangles, outlines, lines, circles, and ASCII
-  bitmap text
-- Canvas math for pan/zoom and coordinate conversion
-- Append-only debug overlay
-- Binary whole-file I/O
-- Replay v1 binary format
-- Replay recorder/player for input snapshots
-
 ## Backend isolation rule
 
 Only `backends/linux_x11/` may include X11 headers or use X11 types. Core source
 files, public headers, tests, and examples must consume backend-independent WPL
 APIs.
+
+## Known limitations
+
+- Linux/X11 only.
+- One active window.
+- Software rendering only.
+- No high-DPI support.
+- No clipping API.
+- No anti-aliasing.
+- ASCII bitmap text only.
+- No Unicode text shaping.
+- No atomic file-write protocol.
+- Replay v1 only.
+- Graphical examples require X11/XWayland.
+- CI builds graphical examples but does not run them.
 
 ## License
 
