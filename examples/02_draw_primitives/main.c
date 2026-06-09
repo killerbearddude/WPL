@@ -1,4 +1,4 @@
-/* main.c - Minimal smoke example for clear and filled rectangle rendering. */
+/* main.c - Minimal smoke example for basic software rendering primitives. */
 
 #include <wpl/wpl.h>
 
@@ -59,14 +59,65 @@ main(void)
         goto cleanup;
 
       result = wpl_draw_rect(draw,
-                             (WplRect){100.0f, 100.0f, 300.0f, 180.0f},
+                             (WplRect){80.0f, 80.0f, 280.0f, 160.0f},
                              (WplColor){0.15f, 0.35f, 0.80f, 1.0f});
       if (wpl_check(result) != 0)
         goto cleanup;
 
       result = wpl_draw_rect(draw,
-                             (WplRect){220.0f, 160.0f, 300.0f, 180.0f},
+                             (WplRect){200.0f, 140.0f, 280.0f, 160.0f},
                              (WplColor){0.90f, 0.25f, 0.15f, 0.50f});
+      if (wpl_check(result) != 0)
+        goto cleanup;
+
+      result = wpl_draw_rect_outline(draw,
+                                     (WplRect){60.0f,
+                                               60.0f,
+                                               460.0f,
+                                               280.0f},
+                                     (WplColor){0.90f,
+                                                0.90f,
+                                                0.90f,
+                                                1.0f},
+                                     4.0f);
+      if (wpl_check(result) != 0)
+        goto cleanup;
+
+      result = wpl_draw_line(draw,
+                             (WplVec2){80.0f, 380.0f},
+                             (WplVec2){520.0f, 520.0f},
+                             (WplColor){0.20f, 0.90f, 0.40f, 1.0f},
+                             8.0f);
+      if (wpl_check(result) != 0)
+        goto cleanup;
+
+      result = wpl_draw_line(draw,
+                             (WplVec2){620.0f, 400.0f},
+                             (WplVec2){920.0f, 400.0f},
+                             (WplColor){0.35f, 0.65f, 1.0f, 1.0f},
+                             2.0f);
+      if (wpl_check(result) != 0)
+        goto cleanup;
+
+      result = wpl_draw_line(draw,
+                             (WplVec2){620.0f, 430.0f},
+                             (WplVec2){620.0f, 560.0f},
+                             (WplColor){1.0f, 0.65f, 0.35f, 1.0f},
+                             2.0f);
+      if (wpl_check(result) != 0)
+        goto cleanup;
+
+      result = wpl_draw_circle(draw,
+                               (WplVec2){640.0f, 220.0f},
+                               90.0f,
+                               (WplColor){0.90f, 0.80f, 0.20f, 0.75f});
+      if (wpl_check(result) != 0)
+        goto cleanup;
+
+      result = wpl_draw_circle(draw,
+                               (WplVec2){760.0f, 260.0f},
+                               70.0f,
+                               (WplColor){0.20f, 0.80f, 0.90f, 0.55f});
       if (wpl_check(result) != 0)
         goto cleanup;
 

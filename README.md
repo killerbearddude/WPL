@@ -26,9 +26,9 @@ system.
 
 The repository includes the initial source foundation, Linux/X11 window
 lifecycle, event pump, frame-stable input snapshots, fixed-capacity draw
-command buffers, and the initial software renderer foundation for clear and
-filled rectangle commands. File I/O, debug overlay, canvas behavior, text
-rendering, advanced primitives, and replay implementation are intentionally
+command buffers, and software renderer support for clear, filled rectangles,
+rectangle outlines, thick lines, and filled circles. File I/O, debug overlay,
+canvas behavior, text rendering, and replay implementation are intentionally
 deferred to later focused patches.
 
 ## Examples
@@ -36,9 +36,8 @@ deferred to later focused patches.
 - `examples/00_empty_window` opens and closes a basic X11 window.
 - `examples/01_input_snapshot` prints keyboard, mouse, wheel, and modifier
   transitions from `WplInputState`.
-- `examples/02_draw_primitives` renders a clear background, an opaque
-  rectangle, and a semi-transparent overlapping rectangle with the software
-  renderer.
+- `examples/02_draw_primitives` renders a clear background, filled rectangles,
+  rectangle outlines, thick lines, and filled circles with the software renderer.
 
 ## Build
 
