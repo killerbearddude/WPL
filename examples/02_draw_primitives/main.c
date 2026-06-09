@@ -58,6 +58,13 @@ main(void)
       if (wpl_check(result) != 0)
         goto cleanup;
 
+      result = wpl_draw_text(draw,
+                             (WplVec2){80.0f, 40.0f},
+                             "WPL software renderer",
+                             (WplColor){0.95f, 0.95f, 0.95f, 1.0f});
+      if (wpl_check(result) != 0)
+        goto cleanup;
+
       result = wpl_draw_rect(draw,
                              (WplRect){80.0f, 80.0f, 280.0f, 160.0f},
                              (WplColor){0.15f, 0.35f, 0.80f, 1.0f});
@@ -118,6 +125,20 @@ main(void)
                                (WplVec2){760.0f, 260.0f},
                                70.0f,
                                (WplColor){0.20f, 0.80f, 0.90f, 0.55f});
+      if (wpl_check(result) != 0)
+        goto cleanup;
+
+      result = wpl_draw_text(draw,
+                             (WplVec2){620.0f, 340.0f},
+                             "ASCII 32-126\nnewline supported",
+                             (WplColor){0.95f, 0.85f, 0.25f, 1.0f});
+      if (wpl_check(result) != 0)
+        goto cleanup;
+
+      result = wpl_draw_text(draw,
+                             (WplVec2){80.0f, 620.0f},
+                             "Esc closes. Resize remains safe. 0-9 !?+-*/",
+                             (WplColor){0.75f, 0.78f, 0.82f, 1.0f});
       if (wpl_check(result) != 0)
         goto cleanup;
 

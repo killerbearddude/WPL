@@ -3,6 +3,7 @@
 #include "wpl_linux_x11_internal.h"
 
 #include "wpl_draw_internal.h"
+#include "wpl_linux_x11_font.h"
 
 #include <limits.h>
 #include <stddef.h>
@@ -542,6 +543,79 @@ wpl_linux_x11_render_circle(WplWindow* window,
     }
 }
 
+static void
+wpl_linux_x11_render_glyph(WplWindow* window,
+                          int x,
+                          int y,
+                          unsigned char c,
+                          WplColor color)
+{
+  const uint8_t* glyph;
+  int row;
+  int col;
+
+  if (window == NULL || window->framebuffer == NULL)
+    return;
+
+  glyph = wpl_linux_x11_font5x7_glyph(c);
+
+  for (row = 0; row < WPL_LINUX_X11_FONT_GLYPH_HEIGHT; row++)
+    {
+      uint8_t bits = glyph[row];
+
+      for (col = 0; col < WPL_LINUX_X11_FONT_GLYPH_WIDTH; col++)
+        {
+          uint8_t mask = (uint8_t)(1u << (WPL_LINUX_X11_FONT_GLYPH_WIDTH
+                                          - 1 - col));
+          if ((bits & mask) != 0u)
+            wpl_linux_x11_blend_pixel_at(window, x + col, y + row, color);
+        }
+    }
+}
+
+static void
+wpl_linux_x11_render_text(WplWindow* window,
+                          WplVec2 position,
+                          const char* text,
+                          WplColor color)
+{
+  int base_x;
+  int x;
+  int y;
+  const char* cursor;
+
+  if (window == NULL || window->framebuffer == NULL || text == NULL)
+    return;
+
+  base_x = wpl_linux_x11_floor_to_int(position.x);
+  x = base_x;
+  y = wpl_linux_x11_floor_to_int(position.y);
+
+  for (cursor = text; *cursor != '\0'; cursor++)
+    {
+      unsigned char c = (unsigned char)*cursor;
+
+      if (c == (unsigned char)'\n')
+        {
+          x = base_x;
+          y += WPL_LINUX_X11_FONT_LINE_HEIGHT;
+          continue;
+        }
+
+      if (c == (unsigned char)'\r')
+        continue;
+
+      if (c == (unsigned char)'\t')
+        {
+          x += WPL_LINUX_X11_FONT_ADVANCE_X * 4;
+          continue;
+        }
+
+      wpl_linux_x11_render_glyph(window, x, y, c, color);
+      x += WPL_LINUX_X11_FONT_ADVANCE_X;
+    }
+}
+
 static WplResult
 wpl_linux_x11_copy_framebuffer_to_ximage(WplWindow* window)
 {
@@ -671,7 +745,11 @@ wpl_submit_draw_list(WplWindow* window, const WplDrawList* list)
           break;
 
         case WPL_DRAW_COMMAND_TEXT:
-          return WPL_RESULT_UNSUPPORTED;
+          wpl_linux_x11_render_text(window,
+                                    command->a,
+                                    command->text,
+                                    command->color);
+          break;
 
         default:
           return WPL_RESULT_UNSUPPORTED;
