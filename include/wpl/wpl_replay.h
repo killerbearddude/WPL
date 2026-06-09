@@ -20,7 +20,7 @@ extern "C" {
 #define WPL_REPLAY_MAX_FRAMES_V1 349525ull
 #define WPL_REPLAY_VALID_FLAGS_V1 0u
 
-/* Opaque replay handles. Stateful replay behavior is implemented later. */
+/* Opaque replay handles for input-snapshot recording and playback. */
 typedef struct WplReplayRecorder WplReplayRecorder;
 typedef struct WplReplayPlayer WplReplayPlayer;
 

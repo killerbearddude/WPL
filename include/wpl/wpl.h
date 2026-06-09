@@ -12,4 +12,14 @@
 #include "wpl_replay.h"
 #include "wpl_debug.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Umbrella header only; declarations live in module headers above. */
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* WPL_H */

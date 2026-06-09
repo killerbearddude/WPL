@@ -14,6 +14,12 @@ find_package(X11 REQUIRED)
 
 enable_testing()
 
+include(CheckLanguage)
+check_language(CXX)
+if(CMAKE_CXX_COMPILER)
+  enable_language(CXX)
+endif()
+
 add_library(wpl_core STATIC
   src/wpl_base.c
   src/wpl_time.c
@@ -152,3 +158,27 @@ target_compile_options(wpl_test_replay PRIVATE
   -Wpedantic
 )
 add_test(NAME wpl_test_replay COMMAND wpl_test_replay)
+
+add_executable(wpl_test_public_headers
+  tests/test_public_headers.c
+)
+target_link_libraries(wpl_test_public_headers PRIVATE wpl_core)
+target_compile_options(wpl_test_public_headers PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_public_headers COMMAND wpl_test_public_headers)
+
+if(CMAKE_CXX_COMPILER)
+  add_executable(wpl_test_public_headers_cpp
+    tests/test_public_headers_cpp.cpp
+  )
+  target_link_libraries(wpl_test_public_headers_cpp PRIVATE wpl_core)
+  target_compile_options(wpl_test_public_headers_cpp PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+  )
+  add_test(NAME wpl_test_public_headers_cpp COMMAND wpl_test_public_headers_cpp)
+endif()
