@@ -110,3 +110,15 @@ target_compile_options(wpl_test_debug_overlay PRIVATE
   -Wpedantic
 )
 add_test(NAME wpl_test_debug_overlay COMMAND wpl_test_debug_overlay)
+
+
+add_executable(wpl_test_file_io
+  tests/test_file_io.c
+)
+target_link_libraries(wpl_test_file_io PRIVATE wpl_core)
+target_compile_options(wpl_test_file_io PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_file_io COMMAND wpl_test_file_io)

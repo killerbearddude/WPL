@@ -28,8 +28,8 @@ The repository includes the initial source foundation, Linux/X11 window
 lifecycle, event pump, frame-stable input snapshots, fixed-capacity draw
 command buffers, software renderer support for clear, filled rectangles,
 rectangle outlines, thick lines, filled circles, printable ASCII bitmap text,
-backend-independent canvas math, and an append-only debug overlay. File I/O
-and replay implementation are intentionally deferred to later focused patches.
+backend-independent canvas math, an append-only debug overlay, and binary whole-file
+file I/O. Replay implementation is intentionally deferred to later focused patches.
 
 ## Examples
 

@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 
+#include "wpl_base.h"
 #include "wpl_result.h"
 
 #ifdef __cplusplus
