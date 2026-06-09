@@ -109,6 +109,76 @@ wpl_linux_x11_blend_pixel_opaque(uint32_t dst, WplColor src)
   return wpl_linux_x11_pack_opaque_pixel(out_r, out_g, out_b);
 }
 
+static float
+wpl_linux_x11_min_float(float a, float b)
+{
+  return a < b ? a : b;
+}
+
+static float
+wpl_linux_x11_max_float(float a, float b)
+{
+  return a > b ? a : b;
+}
+
+static void
+wpl_linux_x11_blend_pixel_at(WplWindow* window,
+                             int x,
+                             int y,
+                             WplColor color)
+{
+  uint32_t* pixel;
+
+  if (window == NULL || window->framebuffer == NULL)
+    return;
+
+  if (x < 0 || y < 0 || x >= window->framebuffer_width
+      || y >= window->framebuffer_height)
+    return;
+
+  pixel = &window->framebuffer[((size_t)y
+                                * (size_t)window->framebuffer_width)
+                               + (size_t)x];
+  *pixel = wpl_linux_x11_blend_pixel_opaque(*pixel, color);
+}
+
+static float
+wpl_linux_x11_distance_sq_point_segment(float px,
+                                        float py,
+                                        WplVec2 a,
+                                        WplVec2 b)
+{
+  float ab_x = b.x - a.x;
+  float ab_y = b.y - a.y;
+  float ap_x = px - a.x;
+  float ap_y = py - a.y;
+  float ab_len_sq = ab_x * ab_x + ab_y * ab_y;
+  float t;
+  float closest_x;
+  float closest_y;
+  float dx;
+  float dy;
+
+  if (ab_len_sq <= 0.0f)
+    {
+      dx = px - a.x;
+      dy = py - a.y;
+      return dx * dx + dy * dy;
+    }
+
+  t = (ap_x * ab_x + ap_y * ab_y) / ab_len_sq;
+  if (t < 0.0f)
+    t = 0.0f;
+  else if (t > 1.0f)
+    t = 1.0f;
+
+  closest_x = a.x + ab_x * t;
+  closest_y = a.y + ab_y * t;
+  dx = px - closest_x;
+  dy = py - closest_y;
+  return dx * dx + dy * dy;
+}
+
 static void
 wpl_linux_x11_destroy_framebuffer(WplWindow* window)
 {
@@ -305,10 +375,170 @@ wpl_linux_x11_render_rect(WplWindow* window, WplRect rect, WplColor color)
 
   for (y = y0; y < y1; y++)
     {
-      uint32_t* row = &window->framebuffer[(size_t)y
-                                           * (size_t)window->framebuffer_width];
       for (x = x0; x < x1; x++)
-        row[x] = wpl_linux_x11_blend_pixel_opaque(row[x], color);
+        wpl_linux_x11_blend_pixel_at(window, x, y, color);
+    }
+}
+
+static void
+wpl_linux_x11_render_rect_outline(WplWindow* window,
+                                  WplRect rect,
+                                  WplColor color,
+                                  float thickness)
+{
+  int x0;
+  int y0;
+  int x1;
+  int y1;
+  int ix0;
+  int iy0;
+  int ix1;
+  int iy1;
+  int clamped_x0;
+  int clamped_y0;
+  int clamped_x1;
+  int clamped_y1;
+  int x;
+  int y;
+
+  if (window == NULL || window->framebuffer == NULL)
+    return;
+
+  if (thickness <= 0.0f || rect.w <= 0.0f || rect.h <= 0.0f)
+    return;
+
+  x0 = wpl_linux_x11_floor_to_int(rect.x);
+  y0 = wpl_linux_x11_floor_to_int(rect.y);
+  x1 = wpl_linux_x11_ceil_to_int(rect.x + rect.w);
+  y1 = wpl_linux_x11_ceil_to_int(rect.y + rect.h);
+
+  ix0 = wpl_linux_x11_floor_to_int(rect.x + thickness);
+  iy0 = wpl_linux_x11_floor_to_int(rect.y + thickness);
+  ix1 = wpl_linux_x11_ceil_to_int(rect.x + rect.w - thickness);
+  iy1 = wpl_linux_x11_ceil_to_int(rect.y + rect.h - thickness);
+
+  clamped_x0 = wpl_linux_x11_clamp_int(x0, 0, window->framebuffer_width);
+  clamped_y0 = wpl_linux_x11_clamp_int(y0, 0, window->framebuffer_height);
+  clamped_x1 = wpl_linux_x11_clamp_int(x1, 0, window->framebuffer_width);
+  clamped_y1 = wpl_linux_x11_clamp_int(y1, 0, window->framebuffer_height);
+
+  if (clamped_x0 >= clamped_x1 || clamped_y0 >= clamped_y1)
+    return;
+
+  for (y = clamped_y0; y < clamped_y1; y++)
+    {
+      for (x = clamped_x0; x < clamped_x1; x++)
+        {
+          bool inside_inner = (ix0 < ix1 && iy0 < iy1 && x >= ix0
+                               && x < ix1 && y >= iy0 && y < iy1);
+
+          if (!inside_inner)
+            wpl_linux_x11_blend_pixel_at(window, x, y, color);
+        }
+    }
+}
+
+static void
+wpl_linux_x11_render_line(WplWindow* window,
+                          WplVec2 a,
+                          WplVec2 b,
+                          WplColor color,
+                          float thickness)
+{
+  float radius;
+  float radius_sq;
+  int x0;
+  int y0;
+  int x1;
+  int y1;
+  int x;
+  int y;
+
+  if (window == NULL || window->framebuffer == NULL)
+    return;
+
+  if (thickness <= 0.0f)
+    return;
+
+  radius = thickness * 0.5f;
+  radius_sq = radius * radius;
+
+  x0 = wpl_linux_x11_floor_to_int(wpl_linux_x11_min_float(a.x, b.x)
+                                  - radius);
+  y0 = wpl_linux_x11_floor_to_int(wpl_linux_x11_min_float(a.y, b.y)
+                                  - radius);
+  x1 = wpl_linux_x11_ceil_to_int(wpl_linux_x11_max_float(a.x, b.x)
+                                 + radius);
+  y1 = wpl_linux_x11_ceil_to_int(wpl_linux_x11_max_float(a.y, b.y)
+                                 + radius);
+
+  x0 = wpl_linux_x11_clamp_int(x0, 0, window->framebuffer_width);
+  y0 = wpl_linux_x11_clamp_int(y0, 0, window->framebuffer_height);
+  x1 = wpl_linux_x11_clamp_int(x1, 0, window->framebuffer_width);
+  y1 = wpl_linux_x11_clamp_int(y1, 0, window->framebuffer_height);
+
+  if (x0 >= x1 || y0 >= y1)
+    return;
+
+  for (y = y0; y < y1; y++)
+    {
+      for (x = x0; x < x1; x++)
+        {
+          float px = (float)x + 0.5f;
+          float py = (float)y + 0.5f;
+          float distance_sq = wpl_linux_x11_distance_sq_point_segment(px,
+                                                                      py,
+                                                                      a,
+                                                                      b);
+          if (distance_sq <= radius_sq)
+            wpl_linux_x11_blend_pixel_at(window, x, y, color);
+        }
+    }
+}
+
+static void
+wpl_linux_x11_render_circle(WplWindow* window,
+                            WplVec2 center,
+                            float radius,
+                            WplColor color)
+{
+  float radius_sq;
+  int x0;
+  int y0;
+  int x1;
+  int y1;
+  int x;
+  int y;
+
+  if (window == NULL || window->framebuffer == NULL)
+    return;
+
+  if (radius <= 0.0f)
+    return;
+
+  radius_sq = radius * radius;
+  x0 = wpl_linux_x11_floor_to_int(center.x - radius);
+  y0 = wpl_linux_x11_floor_to_int(center.y - radius);
+  x1 = wpl_linux_x11_ceil_to_int(center.x + radius);
+  y1 = wpl_linux_x11_ceil_to_int(center.y + radius);
+
+  x0 = wpl_linux_x11_clamp_int(x0, 0, window->framebuffer_width);
+  y0 = wpl_linux_x11_clamp_int(y0, 0, window->framebuffer_height);
+  x1 = wpl_linux_x11_clamp_int(x1, 0, window->framebuffer_width);
+  y1 = wpl_linux_x11_clamp_int(y1, 0, window->framebuffer_height);
+
+  if (x0 >= x1 || y0 >= y1)
+    return;
+
+  for (y = y0; y < y1; y++)
+    {
+      for (x = x0; x < x1; x++)
+        {
+          float dx = ((float)x + 0.5f) - center.x;
+          float dy = ((float)y + 0.5f) - center.y;
+          if ((dx * dx + dy * dy) <= radius_sq)
+            wpl_linux_x11_blend_pixel_at(window, x, y, color);
+        }
     }
 }
 
@@ -419,8 +649,27 @@ wpl_submit_draw_list(WplWindow* window, const WplDrawList* list)
           break;
 
         case WPL_DRAW_COMMAND_RECT_OUTLINE:
+          wpl_linux_x11_render_rect_outline(window,
+                                            command->rect,
+                                            command->color,
+                                            command->thickness);
+          break;
+
         case WPL_DRAW_COMMAND_LINE:
+          wpl_linux_x11_render_line(window,
+                                    command->a,
+                                    command->b,
+                                    command->color,
+                                    command->thickness);
+          break;
+
         case WPL_DRAW_COMMAND_CIRCLE:
+          wpl_linux_x11_render_circle(window,
+                                      command->a,
+                                      command->radius,
+                                      command->color);
+          break;
+
         case WPL_DRAW_COMMAND_TEXT:
           return WPL_RESULT_UNSUPPORTED;
 
