@@ -236,7 +236,7 @@ test_header_decode_rejects_malformed_fields(void)
   wpl_test_write_u64_le(&header[WPL_TEST_HEADER_FRAME_COUNT_OFFSET],
                         WPL_REPLAY_MAX_FRAMES_V1 + 1u);
   assert(wpl_replay_decode_header_v1(header, sizeof(header), &decoded) ==
-         WPL_RESULT_PARSE_ERROR);
+         WPL_RESULT_UNSUPPORTED);
 }
 
 static void
@@ -392,7 +392,7 @@ test_file_size_validation(void)
   assert(wpl_replay_validate_file_size_v1(3u, exact_size - 1u) ==
          WPL_RESULT_PARSE_ERROR);
   assert(wpl_replay_validate_file_size_v1(WPL_REPLAY_MAX_FRAMES_V1 + 1u,
-                                          exact_size) == WPL_RESULT_PARSE_ERROR);
+                                          exact_size) == WPL_RESULT_UNSUPPORTED);
   assert(wpl_replay_validate_file_size_v1(
            0u,
            (size_t)WPL_MAX_FILE_SIZE_V0_1 + 1u) == WPL_RESULT_UNSUPPORTED);

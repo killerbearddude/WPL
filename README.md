@@ -29,8 +29,8 @@ lifecycle, event pump, frame-stable input snapshots, fixed-capacity draw
 command buffers, software renderer support for clear, filled rectangles,
 rectangle outlines, thick lines, filled circles, printable ASCII bitmap text,
 backend-independent canvas math, an append-only debug overlay, binary whole-file
-file I/O, and replay v1 format encode/decode foundations. Live replay
-recorder/player behavior is intentionally deferred to later focused patches.
+file I/O, replay v1 format encode/decode foundations, and replay
+recorder/player state for input snapshot save/load/playback.
 
 ## Examples
 
