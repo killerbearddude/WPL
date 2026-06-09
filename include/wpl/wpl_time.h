@@ -7,10 +7,10 @@
 extern "C" {
 #endif
 
-/* Returns monotonic seconds once the time module is implemented. */
+/* Return monotonic process time in seconds, or 0.0 on unexpected failure. */
 double wpl_time_seconds(void);
 
-/* Returns the most recently computed frame delta for WINDOW. */
+/* Return the most recently computed frame delta for WINDOW. */
 float wpl_window_delta_time(const WplWindow* window);
 
 #ifdef __cplusplus

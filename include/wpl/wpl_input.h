@@ -82,6 +82,7 @@ typedef struct WplInputState {
   WplKeyboardState keyboard;
 } WplInputState;
 
+/* Return the current frame snapshot. NULL returns a zeroed snapshot. */
 WplInputState wpl_get_input(const WplWindow* window);
 
 #ifdef __cplusplus
