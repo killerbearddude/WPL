@@ -1,0 +1,30 @@
+# Build output
+build/
+out/
+dist/
+
+# CMake byproducts
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+CTestTestfile.cmake
+Testing/
+
+# Editor and local state
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Native artifacts
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Logs
+*.log
