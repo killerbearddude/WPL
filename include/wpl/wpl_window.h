@@ -38,7 +38,7 @@ WplResult wpl_begin_frame(WplWindow* window);
 /* Pump all pending platform events into the current frame state. */
 WplResult wpl_pump_events(WplWindow* window);
 
-/* End a frame. Presentation is currently a backend-safe no-op. */
+/* End a frame and present backend-owned framebuffer state when available. */
 WplResult wpl_end_frame(WplWindow* window);
 
 /* Return current window dimensions, or zero for NULL. */

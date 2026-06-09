@@ -8,3 +8,5 @@ if [ ! -d "$repo_dir/build" ]; then
 fi
 
 ctest --test-dir "$repo_dir/build" --output-on-failure
+
+"$repo_dir/scripts/check_no_backend_leaks.sh"
