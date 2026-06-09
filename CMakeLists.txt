@@ -87,3 +87,14 @@ target_compile_options(wpl_test_draw_list PRIVATE
   -Wpedantic
 )
 add_test(NAME wpl_test_draw_list COMMAND wpl_test_draw_list)
+
+add_executable(wpl_test_canvas
+  tests/test_canvas.c
+)
+target_link_libraries(wpl_test_canvas PRIVATE wpl_core)
+target_compile_options(wpl_test_canvas PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_canvas COMMAND wpl_test_canvas)
