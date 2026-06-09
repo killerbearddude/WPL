@@ -8,7 +8,7 @@ application code owns UI behavior, editor behavior, and node graph semantics.
 
 ## Current status
 
-WPL is a v0.1 candidate foundation. The repository currently includes:
+WPL is a v0.1 candidate foundation, conditional pending final validation evidence. The repository currently includes:
 
 - X11 window lifecycle and event pump
 - Frame-stable input snapshots
@@ -25,10 +25,9 @@ WPL is a v0.1 candidate foundation. The repository currently includes:
 - Replay v1 binary format
 - Replay recorder/player
 - Input replay example
-- Ubuntu CI workflow
+- Ubuntu GCC/Clang CI workflow
 
-See `docs/release_checklist.md` and `docs/api_review.md` for the v0.1 readiness
-review.
+See `docs/release_checklist.md`, `docs/validation.md`, and `docs/api_review.md` for the v0.1 readiness review and remaining validation evidence requirements.
 
 ## Scope
 
@@ -96,12 +95,9 @@ ctest --test-dir build --output-on-failure
 
 ## Continuous Integration
 
-Pull requests and pushes to `main` are validated on Ubuntu with CMake, GCC, the
-X11 development headers, public-header smoke tests, backend-leak checks, and
-CTest.
+Pull requests and pushes to `main` are validated on Ubuntu with CMake, GCC, Clang, the X11 development headers, public-header smoke tests, backend-leak checks, and CTest.
 
-CI builds the library, tests, and examples. It does not run graphical examples
-because they require a display server.
+CI builds the library, tests, and examples. It does not run graphical examples because they require a display server. Manual graphical validation is documented in `docs/validation.md`.
 
 ## Examples
 
@@ -134,7 +130,7 @@ Play it back:
 The input replay example records input snapshots only. It does not replay raw
 X11 events, editor commands, application state, widgets, or node graph behavior.
 
-More example notes are in `docs/examples.md`.
+More example notes are in `docs/examples.md`. Manual X11/XWayland smoke validation is documented in `docs/validation.md`.
 
 ## Public API include style
 

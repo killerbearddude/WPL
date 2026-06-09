@@ -1,7 +1,6 @@
 # WPL Examples
 
-Examples are graphical Linux/X11 programs. They are built by the default CMake
-build and by CI, but CI does not run them because they require an X server.
+Examples are graphical Linux/X11 programs. They are built by the default CMake build and by CI, but CI does not run them because they require an X server. Manual validation requirements are listed in `docs/validation.md`.
 
 ## 00_empty_window
 
@@ -132,5 +131,4 @@ Deliberately does not demonstrate:
 
 ## Manual Runtime Requirements
 
-All examples require Linux with an X11 or XWayland display. CI builds the
-examples but does not run them.
+All examples require Linux with an X11 or XWayland display. CI builds the examples but does not run them. Use `scripts/manual_graphical_smoke.sh` to print or run the manual smoke-test commands.
