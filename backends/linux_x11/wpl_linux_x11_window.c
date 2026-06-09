@@ -197,6 +197,8 @@ wpl_create_window(const WplWindowDesc* desc, WplWindow** out_window)
   window->ximage_pixels = NULL;
   window->xkb_detectable_auto_repeat_enabled = false;
 
+  wpl_linux_x11_init_detectable_auto_repeat(window);
+
   XMapWindow(window->display, window->window);
   XFlush(window->display);
 
@@ -246,7 +248,7 @@ wpl_begin_frame(WplWindow* window)
   if (window == NULL)
     return WPL_RESULT_INVALID_ARGUMENT;
 
-  wpl_linux_x11_reset_transient_input(&window->input);
+  wpl_linux_x11_reset_transient_input(window);
 
   now = wpl_time_seconds();
   if (window->last_time > 0.0 && now >= window->last_time)
@@ -294,13 +296,33 @@ wpl_pump_events(WplWindow* window)
         case Expose:
           break;
 
+        case MotionNotify:
+          wpl_linux_x11_handle_motion(window, &event.xmotion);
+          break;
+
+        case ButtonPress:
+          wpl_linux_x11_handle_button_press(window, &event.xbutton);
+          break;
+
+        case ButtonRelease:
+          wpl_linux_x11_handle_button_release(window, &event.xbutton);
+          break;
+
+        case KeyPress:
+          wpl_linux_x11_handle_key_press(window, &event.xkey);
+          break;
+
+        case KeyRelease:
+          wpl_linux_x11_handle_key_release(window, &event.xkey);
+          break;
+
         case FocusIn:
           window->has_focus = true;
           break;
 
         case FocusOut:
           window->has_focus = false;
-          wpl_linux_x11_clear_held_input(&window->input);
+          wpl_linux_x11_clear_input_down_state(window);
           break;
 
         case EnterNotify:

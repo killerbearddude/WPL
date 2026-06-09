@@ -61,3 +61,15 @@ foreach(wpl_target IN ITEMS wpl_core wpl_linux_x11)
 endforeach()
 
 add_subdirectory(examples/00_empty_window)
+add_subdirectory(examples/01_input_snapshot)
+
+add_executable(wpl_test_input_state
+  tests/test_input_state.c
+)
+target_link_libraries(wpl_test_input_state PRIVATE wpl)
+target_compile_options(wpl_test_input_state PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_input_state COMMAND wpl_test_input_state)
