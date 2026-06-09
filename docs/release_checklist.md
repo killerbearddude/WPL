@@ -44,10 +44,14 @@ platform-layer scope.
 
 ## Build and CI
 
+Current gate status: **CONDITIONAL PASS**. Final PASS requires the validation evidence listed in `docs/validation.md`.
+
 - [x] CMake configures the project.
 - [x] `./scripts/build.sh` builds the library, tests, and examples.
 - [x] GitHub Actions validates pull requests and pushes to `main` on Ubuntu.
 - [x] CI installs only the required Linux/X11 build dependencies.
+- [x] Ubuntu GCC CI job is defined.
+- [x] Ubuntu Clang CI job is defined.
 - [x] CI builds graphical examples but does not run them.
 - [x] CI runs CTest.
 - [x] CI runs public-header and backend-leak checks.
@@ -78,8 +82,7 @@ Expected graphical examples:
 - [x] `examples/04_debug_overlay`
 - [x] `examples/05_input_replay`
 
-Graphical examples require a Linux X11/XWayland desktop for manual runtime
-validation. CI builds them but does not run them.
+Graphical examples require a Linux X11/XWayland desktop for manual runtime validation. CI builds them but does not run them. Required manual checks are listed in `docs/validation.md`.
 
 ## Documentation
 
@@ -119,6 +122,13 @@ validation. CI builds them but does not run them.
 
 ## v0.1 Blockers
 
+Required before final PASS:
+
+- [ ] Ubuntu GCC CI passes on latest `main`.
+- [ ] Ubuntu Clang CI passes on latest `main`.
+- [ ] Manual graphical smoke test completed on X11/XWayland.
+- [ ] XKB detectable auto-repeat behavior manually validated.
+- [ ] Fallback repeat-release path validated or explicitly accepted as deferred risk.
 - [ ] Confirm all CI checks pass on `main`.
 - [ ] Confirm README quickstart works on a clean Ubuntu machine.
 - [ ] Confirm manual graphical examples run on a Linux X11/XWayland desktop.
@@ -128,10 +138,10 @@ validation. CI builds them but does not run them.
 Known remaining validation gaps:
 
 - XKB detectable auto-repeat behavior should be manually validated on a real X server.
-- Fallback repeat-release suppression should be tested in an environment where detectable auto-repeat is unavailable.
+- Fallback repeat-release suppression should be tested in an environment where detectable auto-repeat is unavailable or explicitly accepted as deferred risk.
 - Graphical examples require manual X11/XWayland validation.
 
-No hard code blockers are currently known after the Patch 017 rework, pending the validation items above.
+No hard code blockers are currently known after the Patch 017 rework, but the release gate remains conditional until the validation evidence above is completed.
 
 ## Tagging Checklist
 
@@ -143,7 +153,8 @@ Before tagging `v0.1`:
 - [ ] Run `ctest --test-dir build --output-on-failure`.
 - [ ] Run `./scripts/check_public_headers.sh`.
 - [ ] Run `./scripts/check_no_backend_leaks.sh`.
-- [ ] Confirm CI is passing on `main`.
+- [ ] Confirm Ubuntu GCC CI is passing on `main`.
+- [ ] Confirm Ubuntu Clang CI is passing on `main`.
 - [ ] Manually smoke-test graphical examples on Linux X11/XWayland.
 - [ ] Review `README.md` for current quickstart accuracy.
 - [ ] Review this checklist for unresolved blockers.
