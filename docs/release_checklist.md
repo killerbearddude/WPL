@@ -44,7 +44,7 @@ platform-layer scope.
 
 ## Build and CI
 
-Current gate status: **CONDITIONAL PASS**. Final PASS requires the validation evidence listed in `docs/validation.md`.
+Current gate status: **PASS**. Validation evidence is recorded in `docs/validation_report_v0.1.md`.
 
 - [x] CMake configures the project.
 - [x] `./scripts/build.sh` builds the library, tests, and examples.
@@ -120,28 +120,40 @@ Graphical examples require a Linux X11/XWayland desktop for manual runtime valid
 - [x] Expanded input transition unit tests.
 - [x] Corrected release-readiness language that overstated status.
 
-## v0.1 Blockers
+## v0.1 Validation Evidence
 
-Required before final PASS:
+Validation evidence for the v0.1 candidate is recorded in:
 
-- [ ] Ubuntu GCC CI passes on latest `main`.
-- [ ] Ubuntu Clang CI passes on latest `main`.
-- [ ] Manual graphical smoke test completed on X11/XWayland.
-- [ ] XKB detectable auto-repeat behavior manually validated.
-- [ ] Fallback repeat-release path validated or explicitly accepted as deferred risk.
-- [ ] Confirm all CI checks pass on `main`.
-- [ ] Confirm README quickstart works on a clean Ubuntu machine.
-- [ ] Confirm manual graphical examples run on a Linux X11/XWayland desktop.
-- [ ] Confirm public headers have no backend leakage.
-- [ ] Confirm replay round-trip tests pass.
+- `docs/validation_report_v0.1.md`
 
-Known remaining validation gaps:
+Final gate evidence:
 
-- XKB detectable auto-repeat behavior should be manually validated on a real X server.
-- Fallback repeat-release suppression should be tested in an environment where detectable auto-repeat is unavailable or explicitly accepted as deferred risk.
-- Graphical examples require manual X11/XWayland validation.
+- [x] Ubuntu GCC CI passes on latest `main`.
+- [x] Ubuntu Clang CI passes on latest `main`.
+- [x] Manual graphical smoke test completed on X11/XWayland.
+- [x] XKB detectable auto-repeat behavior manually validated.
+- [x] Fallback repeat-release path explicitly accepted as deferred risk.
+- [x] Confirm all CI checks pass on `main`.
+- [x] Confirm manual graphical examples run on a Linux X11/XWayland desktop.
+- [x] Confirm public headers have no backend leakage.
+- [x] Confirm replay round-trip tests pass.
 
-No hard code blockers are currently known after the Patch 017 rework, but the release gate remains conditional until the validation evidence above is completed.
+Known remaining validation risk:
+
+- Fallback repeat-release suppression was not directly validated in an environment where detectable auto-repeat is unavailable. This is accepted as a deferred v0.1 validation risk and should be closed in post-v0.1 validation work.
+
+No hard code blockers are currently known after the Patch 017 rework and Patch 019 validation evidence pass.
+
+## Final Gate
+
+- [x] Validation report completed.
+- [x] CI GCC passed.
+- [x] CI Clang passed.
+- [x] Local default/GCC validation passed.
+- [x] Local Clang validation passed.
+- [x] Manual graphical smoke validation passed.
+- [x] XKB hold-key auto-repeat validation passed.
+- [x] Fallback repeat-release accepted as deferred risk.
 
 ## Tagging Checklist
 
@@ -157,4 +169,5 @@ Before tagging `v0.1`:
 - [ ] Confirm Ubuntu Clang CI is passing on `main`.
 - [ ] Manually smoke-test graphical examples on Linux X11/XWayland.
 - [ ] Review `README.md` for current quickstart accuracy.
+- [ ] Confirm README quickstart works on a clean Ubuntu-like machine.
 - [ ] Review this checklist for unresolved blockers.

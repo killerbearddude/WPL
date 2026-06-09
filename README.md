@@ -8,7 +8,7 @@ application code owns UI behavior, editor behavior, and node graph semantics.
 
 ## Current status
 
-WPL is a v0.1 candidate foundation, conditional pending final validation evidence. The repository currently includes:
+WPL is a v0.1 release candidate. Validation evidence is recorded in `docs/validation_report_v0.1.md`. The repository currently includes:
 
 - X11 window lifecycle and event pump
 - Frame-stable input snapshots
@@ -27,7 +27,7 @@ WPL is a v0.1 candidate foundation, conditional pending final validation evidenc
 - Input replay example
 - Ubuntu GCC/Clang CI workflow
 
-See `docs/release_checklist.md`, `docs/validation.md`, and `docs/api_review.md` for the v0.1 readiness review and remaining validation evidence requirements.
+See `docs/release_checklist.md`, `docs/validation_report_v0.1.md`, `docs/validation.md`, and `docs/api_review.md` for the v0.1 readiness review and validation evidence.
 
 ## Scope
 

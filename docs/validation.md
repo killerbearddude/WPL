@@ -1,7 +1,7 @@
 # WPL v0.1 Validation
 
 This document defines the validation evidence required before treating the WPL
-v0.1 candidate as a final release candidate.
+v0.1 candidate as a final release candidate. Recorded v0.1 evidence lives in `docs/validation_report_v0.1.md`.
 
 ## Automated Validation
 
