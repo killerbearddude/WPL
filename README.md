@@ -26,10 +26,10 @@ system.
 
 The repository includes the initial source foundation, Linux/X11 window
 lifecycle, event pump, frame-stable input snapshots, fixed-capacity draw
-command buffers, and software renderer support for clear, filled rectangles,
-rectangle outlines, thick lines, filled circles, and printable ASCII bitmap
-text. File I/O, debug overlay, canvas behavior, and replay implementation are
-intentionally deferred to later focused patches.
+command buffers, software renderer support for clear, filled rectangles,
+rectangle outlines, thick lines, filled circles, printable ASCII bitmap text,
+and backend-independent canvas math. File I/O, debug overlay, and replay
+implementation are intentionally deferred to later focused patches.
 
 ## Examples
 
