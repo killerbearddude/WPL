@@ -8,6 +8,7 @@
 #include <wpl/wpl_file.h>
 #include <wpl/wpl_replay.h>
 #include <wpl/wpl_debug.h>
+#include <wpl/wpl_log.h>
 #include <wpl/wpl.h>
 
 int

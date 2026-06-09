@@ -9,7 +9,7 @@ regression data.
 - Integer fields are little-endian.
 - Float fields are IEEE-754 binary32 stored little-endian.
 - Boolean fields are serialized as `uint8_t` values `0` or `1`.
-- The header is exactly 32 bytes.
+- The header is exactly 32 bytes; v1 rejects any other HeaderSize value.
 - Each frame is exactly 192 bytes.
 - `WPL_KEY_COUNT` must match `WPL_REPLAY_KEY_COUNT_V1`.
 - `WPL_MOUSE_BUTTON_COUNT` must remain 3 for replay v1.

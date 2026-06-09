@@ -29,6 +29,7 @@ platform-layer scope.
       data, and windows.
 - [x] Public opaque handles are used for backend or stateful objects.
 - [x] Public headers do not expose X11 types.
+- [x] Public logging callback API is present.
 - [x] `WplInputState` exposes frame-stable input snapshots.
 - [x] Draw lists are fixed-capacity and append rendering intent only.
 - [x] Replay does not serialize raw C structs.
@@ -64,6 +65,7 @@ Expected CTest registrations:
 - [x] `wpl_test_replay`
 - [x] `wpl_test_public_headers`
 - [x] `wpl_test_public_headers_cpp` when a C++ compiler is available
+- [x] `wpl_test_log`
 
 ## Examples
 
@@ -72,6 +74,7 @@ Expected graphical examples:
 - [x] `examples/00_empty_window`
 - [x] `examples/01_input_snapshot`
 - [x] `examples/02_draw_primitives`
+- [x] `examples/03_canvas_pan_zoom`
 - [x] `examples/04_debug_overlay`
 - [x] `examples/05_input_replay`
 
@@ -104,6 +107,16 @@ validation. CI builds them but does not run them.
 - Graphical examples require X11/XWayland.
 - CI builds graphical examples but does not run them.
 
+## Resolved in Patch 017
+
+- [x] Added missing public logging API.
+- [x] Added required `examples/03_canvas_pan_zoom`.
+- [x] Tightened replay v1 header-size validation to exact equality.
+- [x] Added X11 TrueColor visual-mask validation before direct framebuffer copy.
+- [x] Hardened renderer float-to-int conversion paths against undefined behavior.
+- [x] Expanded input transition unit tests.
+- [x] Corrected release-readiness language that overstated status.
+
 ## v0.1 Blockers
 
 - [ ] Confirm all CI checks pass on `main`.
@@ -112,7 +125,13 @@ validation. CI builds them but does not run them.
 - [ ] Confirm public headers have no backend leakage.
 - [ ] Confirm replay round-trip tests pass.
 
-No known code blockers were identified in this review.
+Known remaining validation gaps:
+
+- XKB detectable auto-repeat behavior should be manually validated on a real X server.
+- Fallback repeat-release suppression should be tested in an environment where detectable auto-repeat is unavailable.
+- Graphical examples require manual X11/XWayland validation.
+
+No hard code blockers are currently known after the Patch 017 rework, pending the validation items above.
 
 ## Tagging Checklist
 

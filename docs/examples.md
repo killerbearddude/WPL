@@ -61,6 +61,27 @@ Deliberately does not demonstrate:
 - Rich text, Unicode shaping, or font loading.
 - Widgets or layout.
 
+## 03_canvas_pan_zoom
+
+Run:
+
+```sh
+./build/examples/03_canvas_pan_zoom/wpl_canvas_pan_zoom
+```
+
+Purpose:
+
+- Demonstrates public canvas math APIs.
+- Shows canvas-to-screen conversion, screen-to-canvas conversion, mouse-drag
+  panning, and cursor-anchored wheel zoom.
+- Draws a transformed canvas-space grid, origin marker, and simple shapes.
+
+Deliberately does not demonstrate:
+
+- Node graph objects or node selection.
+- Editor modes, handles, widgets, or layout.
+- Renderer transform stacks or retained canvas objects.
+
 ## 04_debug_overlay
 
 Run:

@@ -18,7 +18,9 @@ WPL is a v0.1 candidate foundation. The repository currently includes:
 - Basic 2D primitives
 - ASCII bitmap text
 - Canvas math
+- Canvas pan/zoom example
 - Debug overlay
+- Public logging callback
 - File I/O
 - Replay v1 binary format
 - Replay recorder/player
@@ -110,6 +112,8 @@ After building, examples are available under `build/examples/`.
   modifier transitions from `WplInputState`.
 - `02_draw_primitives/wpl_draw_primitives` renders primitives and ASCII bitmap
   text through the software renderer.
+- `03_canvas_pan_zoom/wpl_canvas_pan_zoom` demonstrates canvas coordinate
+  conversion, mouse-drag panning, and cursor-anchored wheel zoom.
 - `04_debug_overlay/wpl_debug_overlay` shows the append-only debug overlay using
   draw commands.
 - `05_input_replay/wpl_input_replay` records and plays back `WplInputState`
@@ -162,6 +166,8 @@ APIs.
 - No Unicode text shaping.
 - No atomic file-write protocol.
 - Replay v1 only.
+- X11 renderer supports common TrueColor visuals with RGB masks
+  `0x00ff0000`, `0x0000ff00`, and `0x000000ff`.
 - Graphical examples require X11/XWayland.
 - CI builds graphical examples but does not run them.
 

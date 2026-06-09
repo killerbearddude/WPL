@@ -218,6 +218,11 @@ test_header_decode_rejects_malformed_fields(void)
          WPL_RESULT_PARSE_ERROR);
 
   wpl_test_make_valid_header(header);
+  wpl_test_write_u32_le(&header[WPL_TEST_HEADER_SIZE_OFFSET], 64u);
+  assert(wpl_replay_decode_header_v1(header, sizeof(header), &decoded) ==
+         WPL_RESULT_PARSE_ERROR);
+
+  wpl_test_make_valid_header(header);
   wpl_test_write_u32_le(&header[WPL_TEST_HEADER_FRAME_SIZE_OFFSET], 191u);
   assert(wpl_replay_decode_header_v1(header, sizeof(header), &decoded) ==
          WPL_RESULT_PARSE_ERROR);

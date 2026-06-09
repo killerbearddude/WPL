@@ -18,6 +18,7 @@ Public headers are located under `include/wpl/`:
 - `include/wpl/wpl_file.h`
 - `include/wpl/wpl_replay.h`
 - `include/wpl/wpl_debug.h`
+- `include/wpl/wpl_log.h`
 
 The intended application include is:
 
@@ -53,7 +54,7 @@ boundary:
 - `WplCanvasView`
 - `WplFileData`
 - `WplDebugStats`
-- public result/input/draw/replay enum and constant values
+- public result/input/draw/replay/log enum and constant values
 
 These types intentionally avoid backend handles, file descriptors, and raw
 serialized replay structs.
@@ -83,6 +84,8 @@ Fallible public functions use `WplResult`.
   functions succeed and are released with their destroy functions.
 - The debug overlay appends commands to a caller-owned draw list; it owns no
   persistent state.
+- The logging API stores a process-global callback pointer supplied by the
+  application; it performs no allocation and owns no message storage.
 
 ## Null Behavior
 
@@ -140,6 +143,7 @@ The following areas are intentionally not part of the v0.1 public API:
 
 ## v0.1 API Blockers
 
-No known API blockers were identified in this review. Remaining release work is
-validation-oriented: confirm CI, clean Ubuntu quickstart, graphical example smoke
-tests, and final tag checklist completion.
+Patch 017 resolved the known hard API conformance blocker by adding the missing
+public logging callback API. Remaining release work is validation-oriented:
+confirm CI, clean Ubuntu quickstart, graphical example smoke tests, X11
+auto-repeat behavior, and final tag checklist completion.

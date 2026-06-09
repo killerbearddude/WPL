@@ -42,6 +42,13 @@ Deferred text scope:
 - FreeType, fontconfig, HarfBuzz, Xft, or X11 core font rendering.
 - Rich text, editable text, selection, or layout.
 
+## X11 Visual Policy
+
+The v0.1 X11 presenter copies internal `0xAARRGGBB` pixels directly into an
+`XImage` only for common `TrueColor` visuals with RGB masks
+`0x00ff0000`, `0x0000ff00`, and `0x000000ff`. Other visuals return
+`WPL_RESULT_UNSUPPORTED` rather than presenting with incorrect channel order.
+
 ## Deferred Renderer Scope
 
 - Public clipping API.

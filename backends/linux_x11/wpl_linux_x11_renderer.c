@@ -6,15 +6,29 @@
 #include "wpl_linux_x11_font.h"
 
 #include <limits.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 
 static int
-wpl_linux_x11_floor_to_int(float value)
+wpl_linux_x11_floor_to_int_clamped(float value,
+                                   int min_value,
+                                   int max_value)
 {
-  int truncated = (int)value;
+  int truncated;
 
+  if (max_value < min_value)
+    return min_value;
+
+  if (!isfinite(value) || value <= (float)min_value)
+    return min_value;
+
+  if (value >= (float)max_value)
+    return max_value;
+
+  /* The clamped range is framebuffer-derived, so this cast is representable. */
+  truncated = (int)value;
   if ((float)truncated > value)
     truncated--;
 
@@ -22,26 +36,49 @@ wpl_linux_x11_floor_to_int(float value)
 }
 
 static int
-wpl_linux_x11_ceil_to_int(float value)
+wpl_linux_x11_ceil_to_int_clamped(float value,
+                                  int min_value,
+                                  int max_value)
 {
-  int truncated = (int)value;
+  int truncated;
 
+  if (max_value < min_value)
+    return min_value;
+
+  if (!isfinite(value) || value <= (float)min_value)
+    return min_value;
+
+  if (value >= (float)max_value)
+    return max_value;
+
+  /* The clamped range is framebuffer-derived, so this cast is representable. */
+  truncated = (int)value;
   if ((float)truncated < value)
     truncated++;
 
   return truncated;
 }
 
-static int
-wpl_linux_x11_clamp_int(int value, int min_value, int max_value)
+static bool
+wpl_linux_x11_floor_to_int_checked(float value, int* out_value)
 {
-  if (value < min_value)
-    return min_value;
+  int truncated;
 
-  if (value > max_value)
-    return max_value;
+  if (out_value == NULL)
+    return false;
 
-  return value;
+  *out_value = 0;
+
+  if (!isfinite(value) || value < (float)(INT_MIN + 1024)
+      || value > (float)(INT_MAX - 1024))
+    return false;
+
+  truncated = (int)value;
+  if ((float)truncated > value)
+    truncated--;
+
+  *out_value = truncated;
+  return true;
 }
 
 static uint8_t
@@ -246,6 +283,7 @@ wpl_linux_x11_resize_ximage(WplWindow* window, int width, int height)
 {
   uint32_t* pixels;
   XImage* ximage;
+  Visual* visual;
   int screen;
   int depth;
   size_t pixel_count;
@@ -271,6 +309,18 @@ wpl_linux_x11_resize_ximage(WplWindow* window, int width, int height)
   if (depth != 24 && depth != 32)
     return WPL_RESULT_UNSUPPORTED;
 
+  visual = DefaultVisual(window->display, screen);
+  if (visual == NULL)
+    return WPL_RESULT_PLATFORM_ERROR;
+
+  if (visual->class != TrueColor)
+    return WPL_RESULT_UNSUPPORTED;
+
+  if (visual->red_mask != 0x00ff0000ul
+      || visual->green_mask != 0x0000ff00ul
+      || visual->blue_mask != 0x000000fful)
+    return WPL_RESULT_UNSUPPORTED;
+
   pixel_count = (size_t)width * (size_t)height;
   if (pixel_count > (SIZE_MAX / sizeof(uint32_t)))
     return WPL_RESULT_OUT_OF_MEMORY;
@@ -280,7 +330,7 @@ wpl_linux_x11_resize_ximage(WplWindow* window, int width, int height)
     return WPL_RESULT_OUT_OF_MEMORY;
 
   ximage = XCreateImage(window->display,
-                        DefaultVisual(window->display, screen),
+                        visual,
                         (unsigned int)depth,
                         ZPixmap,
                         0,
@@ -361,15 +411,18 @@ wpl_linux_x11_render_rect(WplWindow* window, WplRect rect, WplColor color)
   if (rect.w <= 0.0f || rect.h <= 0.0f)
     return;
 
-  x0 = wpl_linux_x11_floor_to_int(rect.x);
-  y0 = wpl_linux_x11_floor_to_int(rect.y);
-  x1 = wpl_linux_x11_ceil_to_int(rect.x + rect.w);
-  y1 = wpl_linux_x11_ceil_to_int(rect.y + rect.h);
-
-  x0 = wpl_linux_x11_clamp_int(x0, 0, window->framebuffer_width);
-  y0 = wpl_linux_x11_clamp_int(y0, 0, window->framebuffer_height);
-  x1 = wpl_linux_x11_clamp_int(x1, 0, window->framebuffer_width);
-  y1 = wpl_linux_x11_clamp_int(y1, 0, window->framebuffer_height);
+  x0 = wpl_linux_x11_floor_to_int_clamped(rect.x,
+                                           0,
+                                           window->framebuffer_width);
+  y0 = wpl_linux_x11_floor_to_int_clamped(rect.y,
+                                           0,
+                                           window->framebuffer_height);
+  x1 = wpl_linux_x11_ceil_to_int_clamped(rect.x + rect.w,
+                                          0,
+                                          window->framebuffer_width);
+  y1 = wpl_linux_x11_ceil_to_int_clamped(rect.y + rect.h,
+                                          0,
+                                          window->framebuffer_height);
 
   if (x0 >= x1 || y0 >= y1)
     return;
@@ -408,20 +461,36 @@ wpl_linux_x11_render_rect_outline(WplWindow* window,
   if (thickness <= 0.0f || rect.w <= 0.0f || rect.h <= 0.0f)
     return;
 
-  x0 = wpl_linux_x11_floor_to_int(rect.x);
-  y0 = wpl_linux_x11_floor_to_int(rect.y);
-  x1 = wpl_linux_x11_ceil_to_int(rect.x + rect.w);
-  y1 = wpl_linux_x11_ceil_to_int(rect.y + rect.h);
+  x0 = wpl_linux_x11_floor_to_int_clamped(rect.x,
+                                           0,
+                                           window->framebuffer_width);
+  y0 = wpl_linux_x11_floor_to_int_clamped(rect.y,
+                                           0,
+                                           window->framebuffer_height);
+  x1 = wpl_linux_x11_ceil_to_int_clamped(rect.x + rect.w,
+                                          0,
+                                          window->framebuffer_width);
+  y1 = wpl_linux_x11_ceil_to_int_clamped(rect.y + rect.h,
+                                          0,
+                                          window->framebuffer_height);
 
-  ix0 = wpl_linux_x11_floor_to_int(rect.x + thickness);
-  iy0 = wpl_linux_x11_floor_to_int(rect.y + thickness);
-  ix1 = wpl_linux_x11_ceil_to_int(rect.x + rect.w - thickness);
-  iy1 = wpl_linux_x11_ceil_to_int(rect.y + rect.h - thickness);
+  ix0 = wpl_linux_x11_floor_to_int_clamped(rect.x + thickness,
+                                            0,
+                                            window->framebuffer_width);
+  iy0 = wpl_linux_x11_floor_to_int_clamped(rect.y + thickness,
+                                            0,
+                                            window->framebuffer_height);
+  ix1 = wpl_linux_x11_ceil_to_int_clamped(rect.x + rect.w - thickness,
+                                           0,
+                                           window->framebuffer_width);
+  iy1 = wpl_linux_x11_ceil_to_int_clamped(rect.y + rect.h - thickness,
+                                           0,
+                                           window->framebuffer_height);
 
-  clamped_x0 = wpl_linux_x11_clamp_int(x0, 0, window->framebuffer_width);
-  clamped_y0 = wpl_linux_x11_clamp_int(y0, 0, window->framebuffer_height);
-  clamped_x1 = wpl_linux_x11_clamp_int(x1, 0, window->framebuffer_width);
-  clamped_y1 = wpl_linux_x11_clamp_int(y1, 0, window->framebuffer_height);
+  clamped_x0 = x0;
+  clamped_y0 = y0;
+  clamped_x1 = x1;
+  clamped_y1 = y1;
 
   if (clamped_x0 >= clamped_x1 || clamped_y0 >= clamped_y1)
     return;
@@ -464,19 +533,22 @@ wpl_linux_x11_render_line(WplWindow* window,
   radius = thickness * 0.5f;
   radius_sq = radius * radius;
 
-  x0 = wpl_linux_x11_floor_to_int(wpl_linux_x11_min_float(a.x, b.x)
-                                  - radius);
-  y0 = wpl_linux_x11_floor_to_int(wpl_linux_x11_min_float(a.y, b.y)
-                                  - radius);
-  x1 = wpl_linux_x11_ceil_to_int(wpl_linux_x11_max_float(a.x, b.x)
-                                 + radius);
-  y1 = wpl_linux_x11_ceil_to_int(wpl_linux_x11_max_float(a.y, b.y)
-                                 + radius);
-
-  x0 = wpl_linux_x11_clamp_int(x0, 0, window->framebuffer_width);
-  y0 = wpl_linux_x11_clamp_int(y0, 0, window->framebuffer_height);
-  x1 = wpl_linux_x11_clamp_int(x1, 0, window->framebuffer_width);
-  y1 = wpl_linux_x11_clamp_int(y1, 0, window->framebuffer_height);
+  x0 = wpl_linux_x11_floor_to_int_clamped(
+    wpl_linux_x11_min_float(a.x, b.x) - radius,
+    0,
+    window->framebuffer_width);
+  y0 = wpl_linux_x11_floor_to_int_clamped(
+    wpl_linux_x11_min_float(a.y, b.y) - radius,
+    0,
+    window->framebuffer_height);
+  x1 = wpl_linux_x11_ceil_to_int_clamped(
+    wpl_linux_x11_max_float(a.x, b.x) + radius,
+    0,
+    window->framebuffer_width);
+  y1 = wpl_linux_x11_ceil_to_int_clamped(
+    wpl_linux_x11_max_float(a.y, b.y) + radius,
+    0,
+    window->framebuffer_height);
 
   if (x0 >= x1 || y0 >= y1)
     return;
@@ -518,15 +590,18 @@ wpl_linux_x11_render_circle(WplWindow* window,
     return;
 
   radius_sq = radius * radius;
-  x0 = wpl_linux_x11_floor_to_int(center.x - radius);
-  y0 = wpl_linux_x11_floor_to_int(center.y - radius);
-  x1 = wpl_linux_x11_ceil_to_int(center.x + radius);
-  y1 = wpl_linux_x11_ceil_to_int(center.y + radius);
-
-  x0 = wpl_linux_x11_clamp_int(x0, 0, window->framebuffer_width);
-  y0 = wpl_linux_x11_clamp_int(y0, 0, window->framebuffer_height);
-  x1 = wpl_linux_x11_clamp_int(x1, 0, window->framebuffer_width);
-  y1 = wpl_linux_x11_clamp_int(y1, 0, window->framebuffer_height);
+  x0 = wpl_linux_x11_floor_to_int_clamped(center.x - radius,
+                                           0,
+                                           window->framebuffer_width);
+  y0 = wpl_linux_x11_floor_to_int_clamped(center.y - radius,
+                                           0,
+                                           window->framebuffer_height);
+  x1 = wpl_linux_x11_ceil_to_int_clamped(center.x + radius,
+                                          0,
+                                          window->framebuffer_width);
+  y1 = wpl_linux_x11_ceil_to_int_clamped(center.y + radius,
+                                          0,
+                                          window->framebuffer_height);
 
   if (x0 >= x1 || y0 >= y1)
     return;
@@ -587,9 +662,11 @@ wpl_linux_x11_render_text(WplWindow* window,
   if (window == NULL || window->framebuffer == NULL || text == NULL)
     return;
 
-  base_x = wpl_linux_x11_floor_to_int(position.x);
+  if (!wpl_linux_x11_floor_to_int_checked(position.x, &base_x)
+      || !wpl_linux_x11_floor_to_int_checked(position.y, &y))
+    return;
+
   x = base_x;
-  y = wpl_linux_x11_floor_to_int(position.y);
 
   for (cursor = text; *cursor != '\0'; cursor++)
     {
