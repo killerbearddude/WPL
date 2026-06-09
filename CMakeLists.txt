@@ -65,6 +65,7 @@ endforeach()
 add_subdirectory(examples/00_empty_window)
 add_subdirectory(examples/01_input_snapshot)
 add_subdirectory(examples/02_draw_primitives)
+add_subdirectory(examples/04_debug_overlay)
 
 add_executable(wpl_test_input_state
   tests/test_input_state.c
@@ -98,3 +99,14 @@ target_compile_options(wpl_test_canvas PRIVATE
   -Wpedantic
 )
 add_test(NAME wpl_test_canvas COMMAND wpl_test_canvas)
+
+add_executable(wpl_test_debug_overlay
+  tests/test_debug_overlay.c
+)
+target_link_libraries(wpl_test_debug_overlay PRIVATE wpl_core)
+target_compile_options(wpl_test_debug_overlay PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_debug_overlay COMMAND wpl_test_debug_overlay)

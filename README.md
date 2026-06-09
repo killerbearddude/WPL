@@ -28,8 +28,8 @@ The repository includes the initial source foundation, Linux/X11 window
 lifecycle, event pump, frame-stable input snapshots, fixed-capacity draw
 command buffers, software renderer support for clear, filled rectangles,
 rectangle outlines, thick lines, filled circles, printable ASCII bitmap text,
-and backend-independent canvas math. File I/O, debug overlay, and replay
-implementation are intentionally deferred to later focused patches.
+backend-independent canvas math, and an append-only debug overlay. File I/O
+and replay implementation are intentionally deferred to later focused patches.
 
 ## Examples
 
@@ -39,6 +39,8 @@ implementation are intentionally deferred to later focused patches.
 - `examples/02_draw_primitives` renders a clear background, filled rectangles,
   rectangle outlines, thick lines, filled circles, and ASCII bitmap text with
   the software renderer.
+- `examples/04_debug_overlay` shows the append-only debug overlay using the
+  existing draw command path.
 
 ## Build
 
