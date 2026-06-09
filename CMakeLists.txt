@@ -72,6 +72,7 @@ add_subdirectory(examples/00_empty_window)
 add_subdirectory(examples/01_input_snapshot)
 add_subdirectory(examples/02_draw_primitives)
 add_subdirectory(examples/04_debug_overlay)
+add_subdirectory(examples/05_input_replay)
 
 add_executable(wpl_test_input_state
   tests/test_input_state.c

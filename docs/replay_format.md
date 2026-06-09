@@ -50,3 +50,13 @@ input, and zero delta time.
 Replay does not record editor commands, application state, simulation state, X11
 event streams, or raw C structs.  Replay UI controls, debug overlay replay state,
 version migration, compression, and editor-command replay remain out of scope.
+
+## Example Usage
+
+`examples/05_input_replay` demonstrates the public replay APIs. Record mode
+captures frame-stable `WplInputState` snapshots and frame deltas into a replay
+file. Playback mode loads that file through `WplReplayPlayer` and visualizes the
+replayed snapshots with existing draw commands.
+
+The example does not replay raw X11 events, editor commands, application state,
+widgets, layouts, or node graph behavior.

@@ -74,6 +74,23 @@ After building, examples are available under `build/examples/`:
   text through the software renderer.
 - `04_debug_overlay/wpl_debug_overlay` shows the append-only debug overlay using
   draw commands.
+- `05_input_replay/wpl_input_replay` records and plays back `WplInputState`
+  snapshots through the replay API.
+
+Record an input replay:
+
+```sh
+./build/examples/05_input_replay/wpl_input_replay record /tmp/wpl_input.replay
+```
+
+Play it back:
+
+```sh
+./build/examples/05_input_replay/wpl_input_replay playback /tmp/wpl_input.replay
+```
+
+The input replay example records input snapshots only. It does not replay raw
+X11 events, editor commands, application state, widgets, or node graph behavior.
 
 ## Public API include style
 
