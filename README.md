@@ -53,6 +53,16 @@ ctest --test-dir build --output-on-failure
 ./scripts/check_no_backend_leaks.sh
 ```
 
+
+## Continuous Integration
+
+Pull requests and pushes to `main` are validated on Ubuntu with CMake, GCC,
+the X11 development headers, public-header smoke tests, backend-leak checks,
+and CTest.
+
+CI builds the library, tests, and examples. It does not run graphical examples
+because they require a display server.
+
 ## Examples
 
 After building, examples are available under `build/examples/`:
