@@ -25,9 +25,9 @@ system.
 ## Current patch state
 
 The repository includes the initial source foundation, Linux/X11 window
-lifecycle, event pump, and frame-stable input snapshots. Software rendering,
-file I/O, debug overlay, canvas behavior, and replay implementation are
-intentionally deferred to later focused patches.
+lifecycle, event pump, frame-stable input snapshots, and fixed-capacity draw
+command buffers. Software rendering, file I/O, debug overlay, canvas behavior,
+and replay implementation are intentionally deferred to later focused patches.
 
 ## Examples
 

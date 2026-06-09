@@ -73,3 +73,14 @@ target_compile_options(wpl_test_input_state PRIVATE
   -Wpedantic
 )
 add_test(NAME wpl_test_input_state COMMAND wpl_test_input_state)
+
+add_executable(wpl_test_draw_list
+  tests/test_draw_list.c
+)
+target_link_libraries(wpl_test_draw_list PRIVATE wpl_core)
+target_compile_options(wpl_test_draw_list PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_draw_list COMMAND wpl_test_draw_list)
