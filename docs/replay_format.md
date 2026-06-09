@@ -60,3 +60,9 @@ replayed snapshots with existing draw commands.
 
 The example does not replay raw X11 events, editor commands, application state,
 widgets, layouts, or node graph behavior.
+
+## Release Review Note
+
+Replay v1 remains a platform/input-boundary format. Recorder/player APIs save and
+load through the explicit v1 encoder/decoder and WPL file I/O. Raw public C
+struct serialization remains prohibited.
