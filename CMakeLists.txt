@@ -40,6 +40,7 @@ target_include_directories(wpl_linux_x11
     ${CMAKE_CURRENT_SOURCE_DIR}/include
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/backends/linux_x11
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${X11_INCLUDE_DIR}
 )
 
@@ -62,6 +63,7 @@ endforeach()
 
 add_subdirectory(examples/00_empty_window)
 add_subdirectory(examples/01_input_snapshot)
+add_subdirectory(examples/02_draw_primitives)
 
 add_executable(wpl_test_input_state
   tests/test_input_state.c

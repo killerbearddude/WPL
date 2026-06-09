@@ -1,45 +1,10 @@
 /* wpl_draw.c - Fixed-capacity draw command buffer implementation. */
 
-#include "wpl/wpl_draw.h"
+#include "wpl_draw_internal.h"
 
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
-
-/* Draw command kinds are private because applications submit rendering intent
-   through append functions, not by constructing command records directly. */
-typedef enum WplDrawCommandType
-{
-  WPL_DRAW_COMMAND_CLEAR = 0,
-  WPL_DRAW_COMMAND_RECT,
-  WPL_DRAW_COMMAND_RECT_OUTLINE,
-  WPL_DRAW_COMMAND_LINE,
-  WPL_DRAW_COMMAND_CIRCLE,
-  WPL_DRAW_COMMAND_TEXT
-} WplDrawCommandType;
-
-typedef struct WplDrawCommand
-{
-  WplDrawCommandType type;
-
-  WplRect rect;
-  WplVec2 a;
-  WplVec2 b;
-
-  WplColor color;
-
-  float thickness;
-  float radius;
-
-  char text[256];
-} WplDrawCommand;
-
-struct WplDrawList
-{
-  WplDrawCommand* commands;
-  size_t count;
-  size_t capacity;
-};
 
 static bool
 wpl_draw_float_is_finite(float value)

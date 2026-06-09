@@ -39,17 +39,7 @@ wpl_linux_x11_destroy_resources(WplWindow* window)
   if (window == NULL)
     return;
 
-  if (window->ximage != NULL)
-    {
-      XDestroyImage(window->ximage);
-      window->ximage = NULL;
-      window->ximage_pixels = NULL;
-    }
-
-  free(window->framebuffer);
-  window->framebuffer = NULL;
-  window->framebuffer_width = 0;
-  window->framebuffer_height = 0;
+  wpl_linux_x11_destroy_renderer_resources(window);
 
   if (window->display != NULL && window->gc != 0)
     {
