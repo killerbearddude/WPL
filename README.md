@@ -177,6 +177,18 @@ APIs.
 - Graphical examples require X11/XWayland.
 - CI builds graphical examples but does not run them.
 
+## Post-v0.1 Roadmap
+
+WPL v0.1.0 is released and validated.
+
+Post-v0.1 WPL work is now guided by WNG-driven feature requests recorded in:
+
+- `docs/wpl_feature_requests.md`
+
+These requests are platform-layer enhancements only. WPL will not absorb WNG
+graph data, graph mutation, graph validation, graph serialization DTOs, graph
+hit testing, selection rules, editor command logic, widgets, or layout systems.
+
 ## License
 
 WPL is released under the MIT License. See `LICENSE`.
