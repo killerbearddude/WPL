@@ -14,5 +14,8 @@
 int
 main(void)
 {
+  WplCursorShape cursor_shape = WPL_CURSOR_ARROW;
+
+  (void)cursor_shape;
   return 0;
 }

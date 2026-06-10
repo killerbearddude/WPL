@@ -205,6 +205,17 @@ target_compile_options(wpl_test_public_headers PRIVATE
 )
 add_test(NAME wpl_test_public_headers COMMAND wpl_test_public_headers)
 
+add_executable(wpl_test_window_api
+  tests/test_window_api.c
+)
+target_link_libraries(wpl_test_window_api PRIVATE wpl)
+target_compile_options(wpl_test_window_api PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_window_api COMMAND wpl_test_window_api)
+
 if(CMAKE_CXX_COMPILER)
   add_executable(wpl_test_public_headers_cpp
     tests/test_public_headers_cpp.cpp
