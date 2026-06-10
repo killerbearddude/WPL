@@ -1,7 +1,9 @@
 /* wpl_draw.c - Fixed-capacity draw command buffer implementation. */
 
 #include "wpl_draw_internal.h"
+#include "wpl_text_internal.h"
 
+#include <float.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -85,16 +87,16 @@ wpl_draw_append_command(WplDrawList* list, const WplDrawCommand* command)
 }
 
 static WplResult
-wpl_draw_copy_text(char dst[256], const char* src)
+wpl_draw_copy_text(char dst[WPL_DRAW_TEXT_MAX_BYTES + 1u], const char* src)
 {
   size_t i = 0u;
 
   if (dst == NULL || src == NULL)
     return WPL_RESULT_INVALID_ARGUMENT;
 
-  while (i < 256u && src[i] != '\0')
+  while (i <= WPL_DRAW_TEXT_MAX_BYTES && src[i] != '\0')
     {
-      if (i == 255u)
+      if (i == WPL_DRAW_TEXT_MAX_BYTES)
         return WPL_RESULT_TRUNCATED;
 
       dst[i] = src[i];
@@ -102,6 +104,110 @@ wpl_draw_copy_text(char dst[256], const char* src)
     }
 
   dst[i] = '\0';
+  return WPL_RESULT_OK;
+}
+
+static WplResult
+wpl_text_add_columns(size_t* columns, size_t amount)
+{
+  if (columns == NULL)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  if (*columns > SIZE_MAX - amount)
+    return WPL_RESULT_UNSUPPORTED;
+
+  *columns += amount;
+  return WPL_RESULT_OK;
+}
+
+static WplResult
+wpl_text_add_line(size_t* line_count)
+{
+  if (line_count == NULL)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  if (*line_count == SIZE_MAX)
+    return WPL_RESULT_UNSUPPORTED;
+
+  (*line_count)++;
+  return WPL_RESULT_OK;
+}
+
+static bool
+wpl_text_count_fits_float(size_t count, float scale)
+{
+  return ((long double)count <= ((long double)FLT_MAX / (long double)scale));
+}
+
+float
+wpl_text_line_height(void)
+{
+  return WPL_TEXT_LINE_HEIGHT;
+}
+
+float
+wpl_text_glyph_advance_x(void)
+{
+  return WPL_TEXT_GLYPH_ADVANCE_X;
+}
+
+WplResult
+wpl_measure_text(const char* text, WplTextMetrics* out_metrics)
+{
+  size_t current_columns = 0u;
+  size_t max_columns = 0u;
+  size_t line_count = 1u;
+  size_t i;
+  WplResult result;
+
+  if (out_metrics != NULL)
+    *out_metrics = (WplTextMetrics){0};
+
+  if (text == NULL || out_metrics == NULL)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  for (i = 0u; text[i] != '\0'; i++)
+    {
+      unsigned char c = (unsigned char)text[i];
+
+      if (c == (unsigned char)'\n')
+        {
+          if (current_columns > max_columns)
+            max_columns = current_columns;
+
+          current_columns = 0u;
+          result = wpl_text_add_line(&line_count);
+          if (result != WPL_RESULT_OK)
+            return result;
+          continue;
+        }
+
+      if (c == (unsigned char)'\r')
+        continue;
+
+      if (c == (unsigned char)'\t')
+        {
+          result = wpl_text_add_columns(&current_columns, 4u);
+          if (result != WPL_RESULT_OK)
+            return result;
+          continue;
+        }
+
+      result = wpl_text_add_columns(&current_columns, 1u);
+      if (result != WPL_RESULT_OK)
+        return result;
+    }
+
+  if (current_columns > max_columns)
+    max_columns = current_columns;
+
+  if (!wpl_text_count_fits_float(max_columns, WPL_TEXT_GLYPH_ADVANCE_X)
+      || !wpl_text_count_fits_float(line_count, WPL_TEXT_LINE_HEIGHT))
+    return WPL_RESULT_UNSUPPORTED;
+
+  out_metrics->width = (float)max_columns * WPL_TEXT_GLYPH_ADVANCE_X;
+  out_metrics->height = (float)line_count * WPL_TEXT_LINE_HEIGHT;
+  out_metrics->line_height = WPL_TEXT_LINE_HEIGHT;
   return WPL_RESULT_OK;
 }
 

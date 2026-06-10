@@ -258,27 +258,27 @@ test_out_of_range_finite_color_is_accepted(void)
 static void
 test_text_validation(void)
 {
-  char text_255[256];
-  char text_256[257];
+  char accepted_text[WPL_DRAW_TEXT_MAX_BYTES + 1u];
+  char rejected_text[WPL_DRAW_TEXT_MAX_BYTES + 2u];
   WplDrawList* list = wpl_test_create_list(2u);
 
-  memset(text_255, 'a', sizeof(text_255));
-  text_255[255] = '\0';
+  memset(accepted_text, 'a', sizeof(accepted_text));
+  accepted_text[WPL_DRAW_TEXT_MAX_BYTES] = '\0';
 
-  memset(text_256, 'b', sizeof(text_256));
-  text_256[256] = '\0';
+  memset(rejected_text, 'b', sizeof(rejected_text));
+  rejected_text[WPL_DRAW_TEXT_MAX_BYTES + 1u] = '\0';
 
   assert(wpl_draw_text(list, wpl_test_vec2(0.0f, 0.0f), NULL,
                        wpl_test_color())
          == WPL_RESULT_INVALID_ARGUMENT);
   assert(wpl_draw_list_count(list) == 0u);
 
-  assert(wpl_draw_text(list, wpl_test_vec2(0.0f, 0.0f), text_255,
+  assert(wpl_draw_text(list, wpl_test_vec2(0.0f, 0.0f), accepted_text,
                        wpl_test_color())
          == WPL_RESULT_OK);
   assert(wpl_draw_list_count(list) == 1u);
 
-  assert(wpl_draw_text(list, wpl_test_vec2(0.0f, 0.0f), text_256,
+  assert(wpl_draw_text(list, wpl_test_vec2(0.0f, 0.0f), rejected_text,
                        wpl_test_color())
          == WPL_RESULT_TRUNCATED);
   assert(wpl_draw_list_count(list) == 1u);

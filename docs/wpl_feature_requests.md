@@ -62,8 +62,8 @@ Blocker status values:
 
 | ID | Request | Priority | Blocker status |
 |---|---|---:|---|
-| WPL-FR-WNG-001 | Public ASCII text measurement | P0 | Near-term |
-| WPL-FR-WNG-002 | Public text command byte limit | P0 | Near-term |
+| WPL-FR-WNG-001 | Public ASCII text measurement | P0 | Implemented after v0.1 |
+| WPL-FR-WNG-002 | Public text command byte limit | P0 | Implemented after v0.1 |
 | WPL-FR-WNG-003 | Polyline or cubic Bezier primitive | P1 | Near-term |
 | WPL-FR-WNG-004 | Dashed line primitive | P1 | Near-term |
 | WPL-FR-WNG-005 | Cursor shape API | P1 | Deferred |
@@ -82,6 +82,7 @@ Blocker status values:
 
 ### WPL-FR-WNG-001 Public ASCII text measurement
 
+- **Implementation status:** Implemented after v0.1 in Patch 022.
 - **Priority:** P0
 - **Blocker status:** Near-term
 - **Need:** WNG needs deterministic sizing for labels, port names, diagnostics,
@@ -97,6 +98,7 @@ Blocker status values:
 
 ### WPL-FR-WNG-002 Public text command byte limit
 
+- **Implementation status:** Implemented after v0.1 in Patch 022.
 - **Priority:** P0
 - **Blocker status:** Near-term
 - **Need:** WNG needs to clamp or split debug/label text before appending draw

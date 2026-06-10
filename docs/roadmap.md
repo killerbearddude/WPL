@@ -61,10 +61,13 @@ WNG feature requests are tracked in:
 A WPL feature request becomes active only when a WNG milestone needs it and the
 documented WNG fallback is becoming harmful.
 
-### v0.1.1 Candidate: Immediate WNG Support
+### Implemented After v0.1
 
 - WPL-FR-WNG-001 — Public ASCII text measurement
 - WPL-FR-WNG-002 — Public text command byte limit
+
+### v0.1.1 Candidate: Immediate WNG Support
+
 - WPL-FR-WNG-011 — Atomic file write helper
 
 ### v0.1.2 Candidate: Graph Rendering Primitives

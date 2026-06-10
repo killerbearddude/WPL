@@ -103,6 +103,17 @@ target_compile_options(wpl_test_draw_list PRIVATE
 )
 add_test(NAME wpl_test_draw_list COMMAND wpl_test_draw_list)
 
+add_executable(wpl_test_text_metrics
+  tests/test_text_metrics.c
+)
+target_link_libraries(wpl_test_text_metrics PRIVATE wpl_core)
+target_compile_options(wpl_test_text_metrics PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_text_metrics COMMAND wpl_test_text_metrics)
+
 add_executable(wpl_test_canvas
   tests/test_canvas.c
 )

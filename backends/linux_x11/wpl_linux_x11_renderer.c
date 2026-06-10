@@ -4,6 +4,7 @@
 
 #include "wpl_draw_internal.h"
 #include "wpl_linux_x11_font.h"
+#include "wpl_text_internal.h"
 
 #include <limits.h>
 #include <math.h>
@@ -675,7 +676,7 @@ wpl_linux_x11_render_text(WplWindow* window,
       if (c == (unsigned char)'\n')
         {
           x = base_x;
-          y += WPL_LINUX_X11_FONT_LINE_HEIGHT;
+          y += WPL_TEXT_LINE_HEIGHT_PIXELS;
           continue;
         }
 
@@ -684,12 +685,12 @@ wpl_linux_x11_render_text(WplWindow* window,
 
       if (c == (unsigned char)'\t')
         {
-          x += WPL_LINUX_X11_FONT_ADVANCE_X * 4;
+          x += WPL_TEXT_GLYPH_ADVANCE_X_PIXELS * 4;
           continue;
         }
 
       wpl_linux_x11_render_glyph(window, x, y, c, color);
-      x += WPL_LINUX_X11_FONT_ADVANCE_X;
+      x += WPL_TEXT_GLYPH_ADVANCE_X_PIXELS;
     }
 }
 

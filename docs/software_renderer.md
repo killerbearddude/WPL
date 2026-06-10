@@ -33,6 +33,10 @@ Supported text scope:
 - Unsupported bytes render as `?`.
 - Newline advances by a fixed line height.
 - Tab advances by four spaces.
+- Public text metrics use the same glyph advance and line-height constants as
+  the renderer.
+- `WPL_DRAW_TEXT_MAX_BYTES` documents the byte limit for one text draw command;
+  it is not a Unicode character count.
 
 Deferred text scope:
 
