@@ -64,7 +64,7 @@ Blocker status values:
 |---|---|---:|---|
 | WPL-FR-WNG-001 | Public ASCII text measurement | P0 | Implemented after v0.1 |
 | WPL-FR-WNG-002 | Public text command byte limit | P0 | Implemented after v0.1 |
-| WPL-FR-WNG-003 | Polyline or cubic Bezier primitive | P1 | Near-term |
+| WPL-FR-WNG-003 | Polyline or cubic Bezier primitive | P1 | Partially implemented after v0.1 |
 | WPL-FR-WNG-004 | Dashed line primitive | P1 | Near-term |
 | WPL-FR-WNG-005 | Cursor shape API | P1 | Deferred |
 | WPL-FR-WNG-006 | Clip rectangle stack | P1 | Near-term |
@@ -113,6 +113,11 @@ Blocker status values:
 
 ### WPL-FR-WNG-003 Polyline or cubic Bezier primitive
 
+- **Implementation status:** Partially implemented after v0.1 in Patch 024 as
+  `wpl_draw_polyline`. Cubic Bezier support remains deferred.
+- **Implementation note:** The initial implementation expands a polyline into
+  `point_count - 1` existing line commands. This preserves the fixed-capacity
+  draw-list model and avoids variable-sized draw command payloads.
 - **Priority:** P1
 - **Blocker status:** Near-term
 - **Need:** WNG graph links need stable line/curve rendering without turning WNG

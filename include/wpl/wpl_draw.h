@@ -43,6 +43,13 @@ WplResult wpl_draw_line(WplDrawList* list,
                         WplVec2 b,
                         WplColor color,
                         float thickness);
+/* Appends one line segment for each adjacent point pair.
+   Capacity failure is all-or-nothing. */
+WplResult wpl_draw_polyline(WplDrawList* list,
+                            const WplVec2* points,
+                            size_t point_count,
+                            WplColor color,
+                            float thickness);
 WplResult wpl_draw_circle(WplDrawList* list,
                           WplVec2 center,
                           float radius,

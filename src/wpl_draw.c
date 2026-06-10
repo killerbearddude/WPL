@@ -48,6 +48,23 @@ wpl_draw_validate_color(WplColor color)
   return WPL_RESULT_OK;
 }
 
+static bool
+wpl_draw_points_are_finite(const WplVec2* points, size_t point_count)
+{
+  size_t i;
+
+  if (points == NULL)
+    return false;
+
+  for (i = 0u; i < point_count; i++)
+    {
+      if (!wpl_draw_vec2_is_finite(points[i]))
+        return false;
+    }
+
+  return true;
+}
+
 static WplResult
 wpl_draw_validate_rect(WplRect rect)
 {
@@ -385,6 +402,63 @@ wpl_draw_line(WplDrawList* list,
   command.color = color;
   command.thickness = thickness;
   return wpl_draw_append_command(list, &command);
+}
+
+WplResult
+wpl_draw_polyline(WplDrawList* list,
+                  const WplVec2* points,
+                  size_t point_count,
+                  WplColor color,
+                  float thickness)
+{
+  size_t count_before;
+  size_t capacity;
+  size_t required_segments;
+  size_t i;
+  WplResult result;
+
+  if (list == NULL || points == NULL)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  if (point_count < 2u)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  if (!wpl_draw_points_are_finite(points, point_count))
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  result = wpl_draw_validate_color(color);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  result = wpl_draw_validate_thickness(thickness);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  count_before = list->count;
+  capacity = list->capacity;
+  required_segments = point_count - 1u;
+
+  if (count_before > capacity)
+    return WPL_RESULT_ERROR;
+
+  if ((capacity - count_before) < required_segments)
+    return WPL_RESULT_CAPACITY_EXCEEDED;
+
+  for (i = 0u; i + 1u < point_count; i++)
+    {
+      result = wpl_draw_line(list,
+                             points[i],
+                             points[i + 1u],
+                             color,
+                             thickness);
+      if (result != WPL_RESULT_OK)
+        {
+          list->count = count_before;
+          return result;
+        }
+    }
+
+  return WPL_RESULT_OK;
 }
 
 WplResult
