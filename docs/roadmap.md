@@ -68,6 +68,7 @@ documented WNG fallback is becoming harmful.
 - WPL-FR-WNG-011 — Atomic file write helper
 - WPL-FR-WNG-003 — Polyline draw helper
 - WPL-FR-WNG-004 — Dashed line draw helper
+- WPL-FR-WNG-005 — Cursor shape API
 
 ### v0.1.1 Candidate: Graph Rendering Primitives
 
@@ -76,7 +77,6 @@ documented WNG fallback is becoming harmful.
 
 ### v0.1.2 Candidate: Editor Usability Support
 
-- WPL-FR-WNG-005 — Cursor shape API
 - WPL-FR-WNG-008 — User-supplied debug overlay lines
 - WPL-FR-WNG-009 — Panel and rounded rectangle primitives
 

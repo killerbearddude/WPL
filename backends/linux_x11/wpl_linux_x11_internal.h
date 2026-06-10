@@ -27,6 +27,10 @@ struct WplWindow {
   GC gc;
   Atom wm_delete_window;
 
+  Cursor cursors[WPL_CURSOR_NOT_ALLOWED + 1];
+  bool cursors_created[WPL_CURSOR_NOT_ALLOWED + 1];
+  WplCursorShape current_cursor_shape;
+
   int width;
   int height;
 

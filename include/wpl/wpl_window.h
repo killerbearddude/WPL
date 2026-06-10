@@ -20,6 +20,14 @@ typedef struct WplWindowDesc {
   bool resizable;
 } WplWindowDesc;
 
+typedef enum WplCursorShape {
+  WPL_CURSOR_ARROW = 0,
+  WPL_CURSOR_HAND,
+  WPL_CURSOR_CROSSHAIR,
+  WPL_CURSOR_MOVE,
+  WPL_CURSOR_NOT_ALLOWED
+} WplCursorShape;
+
 /* Create one Linux/X11 window. v0.1 supports only one active window. */
 WplResult wpl_create_window(const WplWindowDesc* desc, WplWindow** out_window);
 
@@ -31,6 +39,11 @@ bool wpl_window_should_close(const WplWindow* window);
 
 /* Mark the window as closing without sending a backend event. */
 WplResult wpl_window_request_close(WplWindow* window);
+
+/* Set the platform cursor shape for this window.
+   The public API exposes only portable WPL cursor shapes; backend cursor
+   handles and cursor font constants remain private. */
+WplResult wpl_set_cursor_shape(WplWindow* window, WplCursorShape shape);
 
 /* Begin a frame: compute delta time and reset transient input fields. */
 WplResult wpl_begin_frame(WplWindow* window);

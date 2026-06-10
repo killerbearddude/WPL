@@ -206,6 +206,10 @@ Post-v0.1 `main` also includes dashed-line drawing through a helper that
 expands to existing line commands. This remains a low-level drawing primitive
 and does not add graph/editor semantics.
 
+Post-v0.1 `main` additionally includes a small cursor shape API for platform
+cursor feedback. X11 cursor resources remain backend-private and are not part of
+the `v0.1.0` tag.
+
 ## License
 
 WPL is released under the MIT License. See `LICENSE`.

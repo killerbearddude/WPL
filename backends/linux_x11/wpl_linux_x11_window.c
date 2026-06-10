@@ -5,11 +5,99 @@
 #include "wpl/wpl_base.h"
 #include "wpl/wpl_time.h"
 
+#include <X11/cursorfont.h>
+
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
 static WplWindow* wpl_linux_x11_active_window;
+
+static bool
+wpl_cursor_shape_is_valid(WplCursorShape shape)
+{
+  return shape >= WPL_CURSOR_ARROW && shape <= WPL_CURSOR_NOT_ALLOWED;
+}
+
+static unsigned int
+wpl_linux_x11_cursor_font_shape(WplCursorShape shape)
+{
+  switch (shape)
+    {
+    case WPL_CURSOR_ARROW:
+      return XC_left_ptr;
+    case WPL_CURSOR_HAND:
+      return XC_hand2;
+    case WPL_CURSOR_CROSSHAIR:
+      return XC_crosshair;
+    case WPL_CURSOR_MOVE:
+      return XC_fleur;
+    case WPL_CURSOR_NOT_ALLOWED:
+      return XC_X_cursor;
+    default:
+      return 0u;
+    }
+}
+
+static WplResult
+wpl_linux_x11_get_cursor(WplWindow* window,
+                         WplCursorShape shape,
+                         Cursor* out_cursor)
+{
+  unsigned int cursor_font_shape;
+  Cursor cursor;
+  size_t cursor_index;
+
+  if (window == NULL || out_cursor == NULL)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  *out_cursor = 0;
+
+  if (!wpl_cursor_shape_is_valid(shape))
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  if (window->display == NULL)
+    return WPL_RESULT_PLATFORM_ERROR;
+
+  cursor_index = (size_t)shape;
+  if (window->cursors_created[cursor_index])
+    {
+      *out_cursor = window->cursors[cursor_index];
+      return WPL_RESULT_OK;
+    }
+
+  cursor_font_shape = wpl_linux_x11_cursor_font_shape(shape);
+  if (cursor_font_shape == 0u)
+    return WPL_RESULT_UNSUPPORTED;
+
+  cursor = XCreateFontCursor(window->display, cursor_font_shape);
+  if (cursor == None)
+    return WPL_RESULT_UNSUPPORTED;
+
+  window->cursors[cursor_index] = cursor;
+  window->cursors_created[cursor_index] = true;
+  *out_cursor = cursor;
+  return WPL_RESULT_OK;
+}
+
+static void
+wpl_linux_x11_destroy_cursors(WplWindow* window)
+{
+  size_t i;
+
+  if (window == NULL || window->display == NULL)
+    return;
+
+  for (i = 0u; i <= (size_t)WPL_CURSOR_NOT_ALLOWED; i++)
+    {
+      if (window->cursors_created[i])
+        {
+          XFreeCursor(window->display, window->cursors[i]);
+          window->cursors[i] = 0;
+          window->cursors_created[i] = false;
+        }
+    }
+}
 
 static void
 wpl_linux_x11_set_fixed_size_hints(WplWindow* window, int width, int height)
@@ -40,6 +128,8 @@ wpl_linux_x11_destroy_resources(WplWindow* window)
     return;
 
   wpl_linux_x11_destroy_renderer_resources(window);
+
+  wpl_linux_x11_destroy_cursors(window);
 
   if (window->display != NULL && window->gc != 0)
     {
@@ -177,6 +267,7 @@ wpl_create_window(const WplWindowDesc* desc, WplWindow** out_window)
   window->width = desc->width;
   window->height = desc->height;
   window->should_close = false;
+  window->current_cursor_shape = WPL_CURSOR_ARROW;
   window->has_focus = false;
   window->last_time = wpl_time_seconds();
   window->delta_time = 0.0f;
@@ -227,6 +318,31 @@ wpl_window_request_close(WplWindow* window)
     return WPL_RESULT_INVALID_ARGUMENT;
 
   window->should_close = true;
+  return WPL_RESULT_OK;
+}
+
+WplResult
+wpl_set_cursor_shape(WplWindow* window, WplCursorShape shape)
+{
+  Cursor cursor;
+  WplResult result;
+
+  if (window == NULL)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  if (!wpl_cursor_shape_is_valid(shape))
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  if (window->display == NULL || window->window == 0)
+    return WPL_RESULT_PLATFORM_ERROR;
+
+  result = wpl_linux_x11_get_cursor(window, shape, &cursor);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  XDefineCursor(window->display, window->window, cursor);
+  XFlush(window->display);
+  window->current_cursor_shape = shape;
   return WPL_RESULT_OK;
 }
 
