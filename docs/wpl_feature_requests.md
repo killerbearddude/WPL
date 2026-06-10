@@ -217,6 +217,7 @@ Blocker status values:
 
 - **Priority:** P0
 - **Blocker status:** Near-term
+- **Implementation status:** Implemented after v0.1 in Patch 023.
 - **Need:** WNG needs safer graph-save behavior than direct truncate/write for
   user-authored files.
 - **Requested API direction:** Add an atomic write helper that writes to a temp
