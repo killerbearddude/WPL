@@ -26,6 +26,12 @@ typedef struct WplTextMetrics
   float line_height;
 } WplTextMetrics;
 
+typedef struct WplDashPattern
+{
+  float dash_length;
+  float gap_length;
+} WplDashPattern;
+
 WplResult wpl_create_draw_list(size_t max_commands, WplDrawList** out_list);
 void wpl_destroy_draw_list(WplDrawList* list);
 WplResult wpl_draw_list_clear(WplDrawList* list);
@@ -50,6 +56,14 @@ WplResult wpl_draw_polyline(WplDrawList* list,
                             size_t point_count,
                             WplColor color,
                             float thickness);
+/* Expands to zero or more existing line commands.
+   Capacity failure is all-or-nothing. */
+WplResult wpl_draw_dashed_line(WplDrawList* list,
+                               WplVec2 a,
+                               WplVec2 b,
+                               WplColor color,
+                               float thickness,
+                               WplDashPattern pattern);
 WplResult wpl_draw_circle(WplDrawList* list,
                           WplVec2 center,
                           float radius,

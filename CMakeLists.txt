@@ -36,6 +36,11 @@ target_include_directories(wpl_core
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+target_link_libraries(wpl_core
+  PUBLIC
+    m
+)
+
 add_library(wpl_linux_x11 STATIC
   backends/linux_x11/wpl_linux_x11_window.c
   backends/linux_x11/wpl_linux_x11_input.c
