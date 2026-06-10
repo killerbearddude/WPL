@@ -413,6 +413,283 @@ test_polyline_capacity_failure_preserves_count(void)
   wpl_destroy_draw_list(list);
 }
 
+static WplDashPattern
+wpl_test_dash_pattern(float dash_length, float gap_length)
+{
+  WplDashPattern pattern;
+  pattern.dash_length = dash_length;
+  pattern.gap_length = gap_length;
+  return pattern;
+}
+
+static void
+test_dashed_line_validation(void)
+{
+  WplDrawList* list = wpl_test_create_list(8u);
+  WplVec2 a = wpl_test_vec2(0.0f, 0.0f);
+  WplVec2 b = wpl_test_vec2(10.0f, 0.0f);
+  WplColor color = wpl_test_color();
+  WplDashPattern pattern = wpl_test_dash_pattern(2.0f, 2.0f);
+
+  assert(wpl_draw_dashed_line(NULL, a, b, color, 1.0f, pattern)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  a.x = NAN;
+  assert(wpl_draw_dashed_line(list, a, b, color, 1.0f, pattern)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  a.x = 0.0f;
+  assert(wpl_draw_list_count(list) == 0u);
+
+  b.y = INFINITY;
+  assert(wpl_draw_dashed_line(list, a, b, color, 1.0f, pattern)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  b.y = 0.0f;
+  assert(wpl_draw_list_count(list) == 0u);
+
+  color = wpl_test_color();
+  color.g = NAN;
+  assert(wpl_draw_dashed_line(list, a, b, color, 1.0f, pattern)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  color = wpl_test_color();
+  color.a = INFINITY;
+  assert(wpl_draw_dashed_line(list, a, b, color, 1.0f, pattern)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              wpl_test_color(),
+                              NAN,
+                              pattern)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              wpl_test_color(),
+                              INFINITY,
+                              pattern)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              wpl_test_color(),
+                              -1.0f,
+                              pattern)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  wpl_destroy_draw_list(list);
+}
+
+static void
+test_dashed_line_pattern_validation(void)
+{
+  WplDrawList* list = wpl_test_create_list(8u);
+  WplVec2 a = wpl_test_vec2(0.0f, 0.0f);
+  WplVec2 b = wpl_test_vec2(10.0f, 0.0f);
+  WplColor color = wpl_test_color();
+
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              color,
+                              1.0f,
+                              wpl_test_dash_pattern(0.0f, 2.0f))
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              color,
+                              1.0f,
+                              wpl_test_dash_pattern(-1.0f, 2.0f))
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              color,
+                              1.0f,
+                              wpl_test_dash_pattern(2.0f, 0.0f))
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              color,
+                              1.0f,
+                              wpl_test_dash_pattern(2.0f, -1.0f))
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              color,
+                              1.0f,
+                              wpl_test_dash_pattern(NAN, 2.0f))
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              color,
+                              1.0f,
+                              wpl_test_dash_pattern(INFINITY, 2.0f))
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              color,
+                              1.0f,
+                              wpl_test_dash_pattern(2.0f, NAN))
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              color,
+                              1.0f,
+                              wpl_test_dash_pattern(2.0f, INFINITY))
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  wpl_destroy_draw_list(list);
+}
+
+static void
+test_dashed_line_degenerate_line_appends_zero(void)
+{
+  WplDrawList* list = wpl_test_create_list(2u);
+  WplVec2 p = wpl_test_vec2(5.0f, 5.0f);
+
+  assert(wpl_draw_dashed_line(list,
+                              p,
+                              p,
+                              wpl_test_color(),
+                              1.0f,
+                              wpl_test_dash_pattern(2.0f, 2.0f))
+         == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  wpl_destroy_draw_list(list);
+}
+
+static void
+test_dashed_line_success_counts_and_append_position(void)
+{
+  WplDrawList* list = wpl_test_create_list(8u);
+  WplVec2 a = wpl_test_vec2(0.0f, 0.0f);
+  WplVec2 b = wpl_test_vec2(10.0f, 0.0f);
+
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              wpl_test_color(),
+                              1.0f,
+                              wpl_test_dash_pattern(20.0f, 5.0f))
+         == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 1u);
+
+  assert(wpl_draw_list_clear(list) == WPL_RESULT_OK);
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              wpl_test_color(),
+                              1.0f,
+                              wpl_test_dash_pattern(2.0f, 2.0f))
+         == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 3u);
+
+  assert(wpl_draw_list_clear(list) == WPL_RESULT_OK);
+  b.x = 9.0f;
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              wpl_test_color(),
+                              1.0f,
+                              wpl_test_dash_pattern(2.0f, 2.0f))
+         == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 3u);
+
+  assert(wpl_draw_list_clear(list) == WPL_RESULT_OK);
+  assert(wpl_draw_clear(list, wpl_test_color()) == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 1u);
+  b.x = 10.0f;
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              wpl_test_color(),
+                              0.0f,
+                              wpl_test_dash_pattern(20.0f, 5.0f))
+         == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 2u);
+
+  wpl_destroy_draw_list(list);
+}
+
+static void
+test_dashed_line_capacity_failure_preserves_count(void)
+{
+  WplDrawList* list = wpl_test_create_list(2u);
+  WplVec2 a = wpl_test_vec2(0.0f, 0.0f);
+  WplVec2 b = wpl_test_vec2(10.0f, 0.0f);
+  size_t before = wpl_draw_list_count(list);
+
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              wpl_test_color(),
+                              1.0f,
+                              wpl_test_dash_pattern(2.0f, 2.0f))
+         == WPL_RESULT_CAPACITY_EXCEEDED);
+  assert(wpl_draw_list_count(list) == before);
+
+  assert(wpl_draw_line(list,
+                       a,
+                       b,
+                       wpl_test_color(),
+                       1.0f)
+         == WPL_RESULT_OK);
+  before = wpl_draw_list_count(list);
+
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              wpl_test_color(),
+                              1.0f,
+                              wpl_test_dash_pattern(20.0f, 5.0f))
+         == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == before + 1u);
+
+  before = wpl_draw_list_count(list);
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              wpl_test_color(),
+                              1.0f,
+                              wpl_test_dash_pattern(20.0f, 5.0f))
+         == WPL_RESULT_CAPACITY_EXCEEDED);
+  assert(wpl_draw_list_count(list) == before);
+
+  wpl_destroy_draw_list(list);
+}
+
 static void
 test_zero_sized_shapes_are_accepted(void)
 {
@@ -452,6 +729,11 @@ main(void)
   test_polyline_validation();
   test_polyline_success_counts_and_append_position();
   test_polyline_capacity_failure_preserves_count();
+  test_dashed_line_validation();
+  test_dashed_line_pattern_validation();
+  test_dashed_line_degenerate_line_appends_zero();
+  test_dashed_line_success_counts_and_append_position();
+  test_dashed_line_capacity_failure_preserves_count();
   test_zero_sized_shapes_are_accepted();
   return 0;
 }

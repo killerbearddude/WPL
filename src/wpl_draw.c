@@ -66,6 +66,83 @@ wpl_draw_points_are_finite(const WplVec2* points, size_t point_count)
 }
 
 static WplResult
+wpl_draw_validate_dash_pattern(WplDashPattern pattern)
+{
+  if (!wpl_draw_float_is_finite(pattern.dash_length)
+      || !wpl_draw_float_is_finite(pattern.gap_length))
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  if (pattern.dash_length <= 0.0f || pattern.gap_length <= 0.0f)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  return WPL_RESULT_OK;
+}
+
+static float
+wpl_draw_vec2_distance(WplVec2 a, WplVec2 b)
+{
+  float dx = b.x - a.x;
+  float dy = b.y - a.y;
+  return sqrtf(dx * dx + dy * dy);
+}
+
+static WplVec2
+wpl_draw_vec2_lerp(WplVec2 a, WplVec2 b, float t)
+{
+  WplVec2 result;
+  result.x = a.x + (b.x - a.x) * t;
+  result.y = a.y + (b.y - a.y) * t;
+  return result;
+}
+
+static WplResult
+wpl_draw_dashed_line_segment_count(WplVec2 a,
+                                   WplVec2 b,
+                                   WplDashPattern pattern,
+                                   size_t* out_count)
+{
+  float length;
+  float period;
+  float distance;
+  size_t count = 0u;
+
+  if (out_count == NULL)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  *out_count = 0u;
+
+  length = wpl_draw_vec2_distance(a, b);
+  if (!wpl_draw_float_is_finite(length))
+    return WPL_RESULT_UNSUPPORTED;
+
+  if (length <= 0.0f)
+    return WPL_RESULT_OK;
+
+  period = pattern.dash_length + pattern.gap_length;
+  if (!wpl_draw_float_is_finite(period) || period <= 0.0f)
+    return WPL_RESULT_UNSUPPORTED;
+
+  distance = 0.0f;
+  while (distance < length)
+    {
+      float next_distance;
+
+      if (count == SIZE_MAX)
+        return WPL_RESULT_UNSUPPORTED;
+
+      count++;
+      next_distance = distance + period;
+      if (next_distance <= distance)
+        return WPL_RESULT_UNSUPPORTED;
+
+      distance = next_distance;
+    }
+
+  *out_count = count;
+  return WPL_RESULT_OK;
+}
+
+static WplResult
 wpl_draw_validate_rect(WplRect rect)
 {
   if (!wpl_draw_rect_is_finite(rect))
@@ -456,6 +533,104 @@ wpl_draw_polyline(WplDrawList* list,
           list->count = count_before;
           return result;
         }
+    }
+
+  return WPL_RESULT_OK;
+}
+
+WplResult
+wpl_draw_dashed_line(WplDrawList* list,
+                     WplVec2 a,
+                     WplVec2 b,
+                     WplColor color,
+                     float thickness,
+                     WplDashPattern pattern)
+{
+  size_t count_before;
+  size_t capacity;
+  size_t required_segments = 0u;
+  float length;
+  float period;
+  float distance;
+  WplResult result;
+
+  if (list == NULL)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  if (!wpl_draw_vec2_is_finite(a) || !wpl_draw_vec2_is_finite(b))
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  result = wpl_draw_validate_color(color);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  result = wpl_draw_validate_thickness(thickness);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  result = wpl_draw_validate_dash_pattern(pattern);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  result = wpl_draw_dashed_line_segment_count(a,
+                                              b,
+                                              pattern,
+                                              &required_segments);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  count_before = list->count;
+  capacity = list->capacity;
+
+  if (count_before > capacity)
+    return WPL_RESULT_ERROR;
+
+  if ((capacity - count_before) < required_segments)
+    return WPL_RESULT_CAPACITY_EXCEEDED;
+
+  if (required_segments == 0u)
+    return WPL_RESULT_OK;
+
+  length = wpl_draw_vec2_distance(a, b);
+  if (!wpl_draw_float_is_finite(length))
+    return WPL_RESULT_UNSUPPORTED;
+
+  period = pattern.dash_length + pattern.gap_length;
+  if (!wpl_draw_float_is_finite(period) || period <= 0.0f)
+    return WPL_RESULT_UNSUPPORTED;
+
+  distance = 0.0f;
+  while (distance < length)
+    {
+      float dash_end = distance + pattern.dash_length;
+      float next_distance = distance + period;
+      float t0;
+      float t1;
+      WplVec2 p0;
+      WplVec2 p1;
+
+      if (!wpl_draw_float_is_finite(dash_end) || dash_end > length)
+        dash_end = length;
+
+      t0 = distance / length;
+      t1 = dash_end / length;
+      p0 = wpl_draw_vec2_lerp(a, b, t0);
+      p1 = wpl_draw_vec2_lerp(a, b, t1);
+
+      result = wpl_draw_line(list, p0, p1, color, thickness);
+      if (result != WPL_RESULT_OK)
+        {
+          list->count = count_before;
+          return result;
+        }
+
+      if (next_distance <= distance)
+        {
+          list->count = count_before;
+          return WPL_RESULT_UNSUPPORTED;
+        }
+
+      distance = next_distance;
     }
 
   return WPL_RESULT_OK;

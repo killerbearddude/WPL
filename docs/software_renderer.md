@@ -59,11 +59,17 @@ The v0.1 X11 presenter copies internal `0xAARRGGBB` pixels directly into an
 line commands. It does not add a new renderer command type, variable-sized draw
 command payload, path object, graph-link routing policy, or Bezier support.
 
+## Dashed Line Helper
+
+`wpl_draw_dashed_line` is implemented as a draw-list helper that appends
+existing line commands for each visible dash. It does not add a new renderer
+command type, variable-sized draw command payload, path object, graph-link
+routing policy, clipping behavior, or anti-aliasing.
+
 ## Deferred Renderer Scope
 
 - Public clipping API.
 - Anti-aliasing.
-- Dashed lines.
 - Rounded rectangles.
 - Bezier curves.
 - Gradients.

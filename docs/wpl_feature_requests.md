@@ -65,7 +65,7 @@ Blocker status values:
 | WPL-FR-WNG-001 | Public ASCII text measurement | P0 | Implemented after v0.1 |
 | WPL-FR-WNG-002 | Public text command byte limit | P0 | Implemented after v0.1 |
 | WPL-FR-WNG-003 | Polyline or cubic Bezier primitive | P1 | Partially implemented after v0.1 |
-| WPL-FR-WNG-004 | Dashed line primitive | P1 | Near-term |
+| WPL-FR-WNG-004 | Dashed line primitive | P1 | Implemented after v0.1 |
 | WPL-FR-WNG-005 | Cursor shape API | P1 | Deferred |
 | WPL-FR-WNG-006 | Clip rectangle stack | P1 | Near-term |
 | WPL-FR-WNG-007 | Clipboard text API | P2 | Deferred |
@@ -132,6 +132,11 @@ Blocker status values:
 
 ### WPL-FR-WNG-004 Dashed line primitive
 
+- **Implementation status:** Implemented after v0.1 in Patch 025 as
+  `wpl_draw_dashed_line`.
+- **Implementation note:** The initial implementation expands each visible dash
+  into an existing line command. This preserves the fixed-capacity draw-list
+  model and avoids introducing a renderer-specific dashed-line command.
 - **Priority:** P1
 - **Blocker status:** Near-term
 - **Need:** WNG needs visual distinctions for pending links, selection previews,
