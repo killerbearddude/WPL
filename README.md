@@ -198,6 +198,10 @@ Post-v0.1 `main` also includes atomic whole-file write support for safer host
 persistence workflows. This remains low-level file I/O infrastructure and does
 not add graph serialization or file format policy.
 
+Post-v0.1 `main` additionally includes a public polyline draw helper for WNG
+graph-link rendering experiments. The helper expands to existing line commands
+and is not part of the `v0.1.0` tag.
+
 ## License
 
 WPL is released under the MIT License. See `LICENSE`.

@@ -66,10 +66,11 @@ documented WNG fallback is becoming harmful.
 - WPL-FR-WNG-001 — Public ASCII text measurement
 - WPL-FR-WNG-002 — Public text command byte limit
 - WPL-FR-WNG-011 — Atomic file write helper
+- WPL-FR-WNG-003 — Polyline draw helper
 
 ### v0.1.1 Candidate: Graph Rendering Primitives
 
-- WPL-FR-WNG-003 — Polyline or cubic Bezier primitive
+- WPL-FR-WNG-003 — Cubic Bezier primitive, deferred until WNG proves need
 - WPL-FR-WNG-004 — Dashed line primitive
 - WPL-FR-WNG-006 — Clip rectangle stack
 
@@ -99,3 +100,6 @@ documented WNG fallback is becoming harmful.
 - Application-specific editor behavior.
 - ECS or scene graph.
 - Asset pipeline.
+
+Cubic Bezier link primitive remains deferred until WNG proves straight/polyline
+links are insufficient.

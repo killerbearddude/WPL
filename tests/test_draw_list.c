@@ -287,6 +287,133 @@ test_text_validation(void)
 }
 
 static void
+test_polyline_validation(void)
+{
+  WplDrawList* list = wpl_test_create_list(8u);
+  WplVec2 points[3] = {
+    {0.0f, 0.0f},
+    {10.0f, 10.0f},
+    {20.0f, 0.0f}
+  };
+  WplColor color = wpl_test_color();
+
+  assert(wpl_draw_polyline(NULL, points, 3u, color, 1.0f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_polyline(list, NULL, 3u, color, 1.0f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_polyline(list, points, 0u, color, 1.0f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_polyline(list, points, 1u, color, 1.0f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  points[1].x = NAN;
+  assert(wpl_draw_polyline(list, points, 3u, color, 1.0f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  points[1].x = 10.0f;
+  assert(wpl_draw_list_count(list) == 0u);
+
+  points[1].y = INFINITY;
+  assert(wpl_draw_polyline(list, points, 3u, color, 1.0f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  points[1].y = 10.0f;
+  assert(wpl_draw_list_count(list) == 0u);
+
+  color = wpl_test_color();
+  color.r = NAN;
+  assert(wpl_draw_polyline(list, points, 3u, color, 1.0f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  color = wpl_test_color();
+  color.a = INFINITY;
+  assert(wpl_draw_polyline(list, points, 3u, color, 1.0f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_polyline(list, points, 3u, wpl_test_color(), -1.0f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_polyline(list, points, 3u, wpl_test_color(), 0.0f)
+         == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 2u);
+
+  wpl_destroy_draw_list(list);
+}
+
+static void
+test_polyline_success_counts_and_append_position(void)
+{
+  WplDrawList* list = wpl_test_create_list(4u);
+  WplVec2 two_points[2] = {
+    {0.0f, 0.0f},
+    {10.0f, 10.0f}
+  };
+  WplVec2 three_points[3] = {
+    {0.0f, 0.0f},
+    {10.0f, 10.0f},
+    {20.0f, 0.0f}
+  };
+
+  assert(wpl_draw_polyline(list,
+                           two_points,
+                           2u,
+                           wpl_test_color(),
+                           1.0f)
+         == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 1u);
+
+  assert(wpl_draw_list_clear(list) == WPL_RESULT_OK);
+  assert(wpl_draw_polyline(list,
+                           three_points,
+                           3u,
+                           wpl_test_color(),
+                           1.0f)
+         == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 2u);
+
+  assert(wpl_draw_list_clear(list) == WPL_RESULT_OK);
+  assert(wpl_draw_clear(list, wpl_test_color()) == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 1u);
+  assert(wpl_draw_polyline(list,
+                           three_points,
+                           3u,
+                           wpl_test_color(),
+                           1.0f)
+         == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 3u);
+
+  wpl_destroy_draw_list(list);
+}
+
+static void
+test_polyline_capacity_failure_preserves_count(void)
+{
+  WplDrawList* list = wpl_test_create_list(1u);
+  WplVec2 points[3] = {
+    {0.0f, 0.0f},
+    {10.0f, 10.0f},
+    {20.0f, 0.0f}
+  };
+  size_t before = wpl_draw_list_count(list);
+
+  assert(wpl_draw_polyline(list, points, 3u, wpl_test_color(), 1.0f)
+         == WPL_RESULT_CAPACITY_EXCEEDED);
+  assert(wpl_draw_list_count(list) == before);
+
+  assert(wpl_draw_line(list, points[0], points[1], wpl_test_color(), 1.0f)
+         == WPL_RESULT_OK);
+  before = wpl_draw_list_count(list);
+
+  assert(wpl_draw_polyline(list, points, 2u, wpl_test_color(), 1.0f)
+         == WPL_RESULT_CAPACITY_EXCEEDED);
+  assert(wpl_draw_list_count(list) == before);
+
+  wpl_destroy_draw_list(list);
+}
+
+static void
 test_zero_sized_shapes_are_accepted(void)
 {
   WplDrawList* list = wpl_test_create_list(4u);
@@ -322,6 +449,9 @@ main(void)
   test_nonfinite_values_are_rejected();
   test_out_of_range_finite_color_is_accepted();
   test_text_validation();
+  test_polyline_validation();
+  test_polyline_success_counts_and_append_position();
+  test_polyline_capacity_failure_preserves_count();
   test_zero_sized_shapes_are_accepted();
   return 0;
 }

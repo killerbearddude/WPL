@@ -53,6 +53,12 @@ The v0.1 X11 presenter copies internal `0xAARRGGBB` pixels directly into an
 `0x00ff0000`, `0x0000ff00`, and `0x000000ff`. Other visuals return
 `WPL_RESULT_UNSUPPORTED` rather than presenting with incorrect channel order.
 
+## Polyline Helper
+
+`wpl_draw_polyline` is implemented as a draw-list helper that appends existing
+line commands. It does not add a new renderer command type, variable-sized draw
+command payload, path object, graph-link routing policy, or Bezier support.
+
 ## Deferred Renderer Scope
 
 - Public clipping API.
