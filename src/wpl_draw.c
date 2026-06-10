@@ -335,6 +335,7 @@ wpl_create_draw_list(size_t max_commands, WplDrawList** out_list)
 
   list->count = 0u;
   list->capacity = max_commands;
+  list->clip_depth = 0u;
   *out_list = list;
   return WPL_RESULT_OK;
 }
@@ -356,6 +357,7 @@ wpl_draw_list_clear(WplDrawList* list)
     return WPL_RESULT_INVALID_ARGUMENT;
 
   list->count = 0u;
+  list->clip_depth = 0u;
   return WPL_RESULT_OK;
 }
 
@@ -633,6 +635,52 @@ wpl_draw_dashed_line(WplDrawList* list,
       distance = next_distance;
     }
 
+  return WPL_RESULT_OK;
+}
+
+WplResult
+wpl_draw_push_clip(WplDrawList* list, WplRect rect)
+{
+  WplDrawCommand command = {0};
+  WplResult result;
+
+  if (list == NULL)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  result = wpl_draw_validate_rect(rect);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  command.type = WPL_DRAW_COMMAND_PUSH_CLIP;
+  command.rect = rect;
+
+  result = wpl_draw_append_command(list, &command);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  list->clip_depth++;
+  return WPL_RESULT_OK;
+}
+
+WplResult
+wpl_draw_pop_clip(WplDrawList* list)
+{
+  WplDrawCommand command = {0};
+  WplResult result;
+
+  if (list == NULL)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  if (list->clip_depth == 0u)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  command.type = WPL_DRAW_COMMAND_POP_CLIP;
+
+  result = wpl_draw_append_command(list, &command);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  list->clip_depth--;
   return WPL_RESULT_OK;
 }
 

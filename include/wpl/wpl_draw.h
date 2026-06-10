@@ -64,6 +64,8 @@ WplResult wpl_draw_dashed_line(WplDrawList* list,
                                WplColor color,
                                float thickness,
                                WplDashPattern pattern);
+WplResult wpl_draw_push_clip(WplDrawList* list, WplRect rect);
+WplResult wpl_draw_pop_clip(WplDrawList* list);
 WplResult wpl_draw_circle(WplDrawList* list,
                           WplVec2 center,
                           float radius,

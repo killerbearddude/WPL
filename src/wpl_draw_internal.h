@@ -17,7 +17,9 @@ typedef enum WplDrawCommandType
   WPL_DRAW_COMMAND_RECT_OUTLINE,
   WPL_DRAW_COMMAND_LINE,
   WPL_DRAW_COMMAND_CIRCLE,
-  WPL_DRAW_COMMAND_TEXT
+  WPL_DRAW_COMMAND_TEXT,
+  WPL_DRAW_COMMAND_PUSH_CLIP,
+  WPL_DRAW_COMMAND_POP_CLIP
 } WplDrawCommandType;
 
 typedef struct WplDrawCommand
@@ -41,6 +43,7 @@ struct WplDrawList
   WplDrawCommand* commands;
   size_t count;
   size_t capacity;
+  size_t clip_depth;
 };
 
 #endif /* WPL_DRAW_INTERNAL_H */

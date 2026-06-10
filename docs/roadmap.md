@@ -68,12 +68,12 @@ documented WNG fallback is becoming harmful.
 - WPL-FR-WNG-011 — Atomic file write helper
 - WPL-FR-WNG-003 — Polyline draw helper
 - WPL-FR-WNG-004 — Dashed line draw helper
+- WPL-FR-WNG-006 — Clip rectangle stack
 - WPL-FR-WNG-005 — Cursor shape API
 
 ### v0.1.1 Candidate: Graph Rendering Primitives
 
 - WPL-FR-WNG-003 — Cubic Bezier primitive, deferred until WNG proves need
-- WPL-FR-WNG-006 — Clip rectangle stack
 
 ### v0.1.2 Candidate: Editor Usability Support
 

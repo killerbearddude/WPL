@@ -67,7 +67,7 @@ Blocker status values:
 | WPL-FR-WNG-003 | Polyline or cubic Bezier primitive | P1 | Partially implemented after v0.1 |
 | WPL-FR-WNG-004 | Dashed line primitive | P1 | Implemented after v0.1 |
 | WPL-FR-WNG-005 | Cursor shape API | P1 | Implemented after v0.1 |
-| WPL-FR-WNG-006 | Clip rectangle stack | P1 | Near-term |
+| WPL-FR-WNG-006 | Clip rectangle stack | P1 | Implemented after v0.1 |
 | WPL-FR-WNG-007 | Clipboard text API | P2 | Deferred |
 | WPL-FR-WNG-008 | User-supplied debug overlay lines | P1 | Deferred |
 | WPL-FR-WNG-009 | Panel and rounded rectangle primitives | P1 | Deferred |
@@ -166,6 +166,11 @@ Blocker status values:
 
 ### WPL-FR-WNG-006 Clip rectangle stack
 
+- **Implementation status:** Implemented after v0.1 in Patch 027 as
+  `wpl_draw_push_clip` and `wpl_draw_pop_clip`.
+- **Implementation note:** Clip commands are stored in the draw list and affect
+  subsequent draw commands in order. Nested clips intersect. Clip state resets
+  at each `wpl_submit_draw_list` call.
 - **Priority:** P1
 - **Blocker status:** Near-term
 - **Need:** WNG needs to constrain canvas panels, inspectors, minimap regions,
