@@ -33,7 +33,7 @@ typedef struct WplDrawCommand
   float thickness;
   float radius;
 
-  char text[256];
+  char text[WPL_DRAW_TEXT_MAX_BYTES + 1u];
 } WplDrawCommand;
 
 struct WplDrawList

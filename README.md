@@ -189,6 +189,10 @@ These requests are platform-layer enhancements only. WPL will not absorb WNG
 graph data, graph mutation, graph validation, graph serialization DTOs, graph
 hit testing, selection rules, editor command logic, widgets, or layout systems.
 
+Post-v0.1 `main` additionally includes public ASCII text measurement and a
+public text command byte limit for WNG planning. These are not part of the
+`v0.1.0` tag until a later release is cut.
+
 ## License
 
 WPL is released under the MIT License. See `LICENSE`.

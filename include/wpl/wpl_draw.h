@@ -11,8 +11,20 @@
 extern "C" {
 #endif
 
+/* Maximum non-null bytes accepted by one wpl_draw_text command.
+   This is a byte count, not a Unicode character count, and excludes the
+   terminating null byte stored internally. */
+#define WPL_DRAW_TEXT_MAX_BYTES 255u
+
 /* Opaque fixed-capacity draw command list. */
 typedef struct WplDrawList WplDrawList;
+
+typedef struct WplTextMetrics
+{
+  float width;
+  float height;
+  float line_height;
+} WplTextMetrics;
 
 WplResult wpl_create_draw_list(size_t max_commands, WplDrawList** out_list);
 void wpl_destroy_draw_list(WplDrawList* list);
@@ -39,6 +51,10 @@ WplResult wpl_draw_text(WplDrawList* list,
                         WplVec2 position,
                         const char* text,
                         WplColor color);
+
+WplResult wpl_measure_text(const char* text, WplTextMetrics* out_metrics);
+float wpl_text_line_height(void);
+float wpl_text_glyph_advance_x(void);
 
 WplResult wpl_submit_draw_list(WplWindow* window, const WplDrawList* list);
 
