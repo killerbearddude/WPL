@@ -21,6 +21,13 @@
 #include "wpl/wpl_result.h"
 #include "wpl/wpl_window.h"
 
+typedef struct WplLinuxX11RenderClip {
+  int x0;
+  int y0;
+  int x1;
+  int y1;
+} WplLinuxX11RenderClip;
+
 struct WplWindow {
   Display* display;
   Window window;
@@ -48,6 +55,11 @@ struct WplWindow {
 
   XImage* ximage;
   uint32_t* ximage_pixels;
+
+  WplLinuxX11RenderClip active_clip;
+  WplLinuxX11RenderClip* clip_stack;
+  size_t clip_stack_capacity;
+  size_t clip_stack_depth;
 
   bool xkb_detectable_auto_repeat_enabled;
 };

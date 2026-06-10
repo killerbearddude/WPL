@@ -160,6 +160,146 @@ wpl_linux_x11_max_float(float a, float b)
   return a > b ? a : b;
 }
 
+static WplLinuxX11RenderClip
+wpl_linux_x11_full_clip(const WplWindow* window)
+{
+  WplLinuxX11RenderClip clip = {0, 0, 0, 0};
+
+  if (window == NULL)
+    return clip;
+
+  clip.x1 = window->framebuffer_width;
+  clip.y1 = window->framebuffer_height;
+  return clip;
+}
+
+static bool
+wpl_linux_x11_clip_is_empty(WplLinuxX11RenderClip clip)
+{
+  return clip.x0 >= clip.x1 || clip.y0 >= clip.y1;
+}
+
+static WplLinuxX11RenderClip
+wpl_linux_x11_intersect_clip(WplLinuxX11RenderClip a,
+                             WplLinuxX11RenderClip b)
+{
+  WplLinuxX11RenderClip result;
+
+  result.x0 = a.x0 > b.x0 ? a.x0 : b.x0;
+  result.y0 = a.y0 > b.y0 ? a.y0 : b.y0;
+  result.x1 = a.x1 < b.x1 ? a.x1 : b.x1;
+  result.y1 = a.y1 < b.y1 ? a.y1 : b.y1;
+  return result;
+}
+
+static WplLinuxX11RenderClip
+wpl_linux_x11_rect_to_clip(WplWindow* window, WplRect rect)
+{
+  WplLinuxX11RenderClip clip = {0, 0, 0, 0};
+
+  if (window == NULL || window->framebuffer == NULL)
+    return clip;
+
+  if (rect.w <= 0.0f || rect.h <= 0.0f)
+    {
+      clip.x0 = wpl_linux_x11_floor_to_int_clamped(rect.x,
+                                                   0,
+                                                   window->framebuffer_width);
+      clip.y0 = wpl_linux_x11_floor_to_int_clamped(rect.y,
+                                                   0,
+                                                   window->framebuffer_height);
+      clip.x1 = clip.x0;
+      clip.y1 = clip.y0;
+      return clip;
+    }
+
+  clip.x0 = wpl_linux_x11_floor_to_int_clamped(rect.x,
+                                               0,
+                                               window->framebuffer_width);
+  clip.y0 = wpl_linux_x11_floor_to_int_clamped(rect.y,
+                                               0,
+                                               window->framebuffer_height);
+  clip.x1 = wpl_linux_x11_ceil_to_int_clamped(rect.x + rect.w,
+                                              0,
+                                              window->framebuffer_width);
+  clip.y1 = wpl_linux_x11_ceil_to_int_clamped(rect.y + rect.h,
+                                              0,
+                                              window->framebuffer_height);
+  return clip;
+}
+
+static WplResult
+wpl_linux_x11_ensure_clip_stack_capacity(WplWindow* window, size_t capacity)
+{
+  WplLinuxX11RenderClip* clips;
+
+  if (window == NULL)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  if (capacity <= window->clip_stack_capacity)
+    return WPL_RESULT_OK;
+
+  if (capacity > (SIZE_MAX / sizeof(WplLinuxX11RenderClip)))
+    return WPL_RESULT_OUT_OF_MEMORY;
+
+  clips = (WplLinuxX11RenderClip*)realloc(window->clip_stack,
+                                          capacity * sizeof(clips[0]));
+  if (clips == NULL)
+    return WPL_RESULT_OUT_OF_MEMORY;
+
+  window->clip_stack = clips;
+  window->clip_stack_capacity = capacity;
+  return WPL_RESULT_OK;
+}
+
+static void
+wpl_linux_x11_reset_clip_stack(WplWindow* window)
+{
+  if (window == NULL)
+    return;
+
+  window->active_clip = wpl_linux_x11_full_clip(window);
+  window->clip_stack_depth = 0u;
+}
+
+static WplResult
+wpl_linux_x11_push_clip(WplWindow* window, WplRect rect)
+{
+  WplLinuxX11RenderClip clip;
+
+  if (window == NULL)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  if (window->clip_stack_depth >= window->clip_stack_capacity)
+    return WPL_RESULT_CAPACITY_EXCEEDED;
+
+  clip = wpl_linux_x11_intersect_clip(window->active_clip,
+                                      wpl_linux_x11_rect_to_clip(window,
+                                                                 rect));
+  window->clip_stack[window->clip_stack_depth] = clip;
+  window->clip_stack_depth++;
+  window->active_clip = clip;
+  return WPL_RESULT_OK;
+}
+
+static WplResult
+wpl_linux_x11_pop_clip(WplWindow* window)
+{
+  if (window == NULL)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  if (window->clip_stack_depth == 0u)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  window->clip_stack_depth--;
+  if (window->clip_stack_depth > 0u)
+    window->active_clip = window->clip_stack[window->clip_stack_depth - 1u];
+  else
+    window->active_clip = wpl_linux_x11_full_clip(window);
+
+  return WPL_RESULT_OK;
+}
+
 static void
 wpl_linux_x11_blend_pixel_at(WplWindow* window,
                              int x,
@@ -173,6 +313,10 @@ wpl_linux_x11_blend_pixel_at(WplWindow* window,
 
   if (x < 0 || y < 0 || x >= window->framebuffer_width
       || y >= window->framebuffer_height)
+    return;
+
+  if (x < window->active_clip.x0 || x >= window->active_clip.x1
+      || y < window->active_clip.y0 || y >= window->active_clip.y1)
     return;
 
   pixel = &window->framebuffer[((size_t)y
@@ -382,18 +526,23 @@ static void
 wpl_linux_x11_render_clear(WplWindow* window, WplColor color)
 {
   uint32_t pixel;
-  size_t pixel_count;
-  size_t i;
+  int x;
+  int y;
 
   if (window == NULL || window->framebuffer == NULL)
     return;
 
-  pixel = wpl_linux_x11_color_to_pixel_opaque(color);
-  pixel_count = ((size_t)window->framebuffer_width
-                 * (size_t)window->framebuffer_height);
+  if (wpl_linux_x11_clip_is_empty(window->active_clip))
+    return;
 
-  for (i = 0u; i < pixel_count; i++)
-    window->framebuffer[i] = pixel;
+  pixel = wpl_linux_x11_color_to_pixel_opaque(color);
+
+  for (y = window->active_clip.y0; y < window->active_clip.y1; y++)
+    {
+      for (x = window->active_clip.x0; x < window->active_clip.x1; x++)
+        window->framebuffer[((size_t)y * (size_t)window->framebuffer_width)
+                            + (size_t)x] = pixel;
+    }
 }
 
 static void
@@ -760,8 +909,17 @@ wpl_linux_x11_present(WplWindow* window)
 void
 wpl_linux_x11_destroy_renderer_resources(WplWindow* window)
 {
+  if (window == NULL)
+    return;
+
   wpl_linux_x11_destroy_ximage(window);
   wpl_linux_x11_destroy_framebuffer(window);
+
+  free(window->clip_stack);
+  window->clip_stack = NULL;
+  window->clip_stack_capacity = 0u;
+  window->clip_stack_depth = 0u;
+  window->active_clip = (WplLinuxX11RenderClip){0, 0, 0, 0};
 }
 
 WplResult
@@ -785,6 +943,12 @@ wpl_submit_draw_list(WplWindow* window, const WplDrawList* list)
   result = wpl_linux_x11_ensure_render_targets(window);
   if (result != WPL_RESULT_OK)
     return result;
+
+  result = wpl_linux_x11_ensure_clip_stack_capacity(window, list->count);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  wpl_linux_x11_reset_clip_stack(window);
 
   for (i = 0u; i < list->count; i++)
     {
@@ -827,6 +991,18 @@ wpl_submit_draw_list(WplWindow* window, const WplDrawList* list)
                                     command->a,
                                     command->text,
                                     command->color);
+          break;
+
+        case WPL_DRAW_COMMAND_PUSH_CLIP:
+          result = wpl_linux_x11_push_clip(window, command->rect);
+          if (result != WPL_RESULT_OK)
+            return result;
+          break;
+
+        case WPL_DRAW_COMMAND_POP_CLIP:
+          result = wpl_linux_x11_pop_clip(window);
+          if (result != WPL_RESULT_OK)
+            return result;
           break;
 
         default:

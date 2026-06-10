@@ -66,6 +66,17 @@ existing line commands for each visible dash. It does not add a new renderer
 command type, variable-sized draw command payload, path object, graph-link
 routing policy, clipping behavior, or anti-aliasing.
 
+## Clip Rectangle Stack
+
+WPL supports draw-list clip push/pop commands.
+
+- Clips are framebuffer-space rectangles.
+- Clip state affects subsequent draw commands.
+- Nested clips intersect.
+- Clip state resets on each draw-list submission.
+- Clear commands inside a clip clear only the active clip region.
+- Clip commands are renderer behavior, not widget or layout behavior.
+
 ## Deferred Renderer Scope
 
 - Public clipping API.

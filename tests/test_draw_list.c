@@ -690,6 +690,108 @@ test_dashed_line_capacity_failure_preserves_count(void)
   wpl_destroy_draw_list(list);
 }
 
+
+static void
+test_clip_validation(void)
+{
+  WplDrawList* list = wpl_test_create_list(8u);
+  WplRect rect = wpl_test_rect();
+
+  assert(wpl_draw_push_clip(NULL, rect) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_pop_clip(NULL) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_pop_clip(list) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  rect = wpl_test_rect();
+  rect.x = NAN;
+  assert(wpl_draw_push_clip(list, rect) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  rect = wpl_test_rect();
+  rect.y = INFINITY;
+  assert(wpl_draw_push_clip(list, rect) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  rect = wpl_test_rect();
+  rect.w = -1.0f;
+  assert(wpl_draw_push_clip(list, rect) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  rect = wpl_test_rect();
+  rect.h = -1.0f;
+  assert(wpl_draw_push_clip(list, rect) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  rect = wpl_test_rect();
+  rect.w = 0.0f;
+  assert(wpl_draw_push_clip(list, rect) == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 1u);
+  assert(wpl_draw_pop_clip(list) == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 2u);
+
+  assert(wpl_draw_list_clear(list) == WPL_RESULT_OK);
+  rect = wpl_test_rect();
+  rect.h = 0.0f;
+  assert(wpl_draw_push_clip(list, rect) == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 1u);
+  assert(wpl_draw_pop_clip(list) == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 2u);
+
+  wpl_destroy_draw_list(list);
+}
+
+static void
+test_clip_push_pop_counts_and_clear(void)
+{
+  WplDrawList* list = wpl_test_create_list(8u);
+
+  assert(wpl_draw_push_clip(list, wpl_test_rect()) == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 1u);
+  assert(wpl_draw_pop_clip(list) == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 2u);
+
+  assert(wpl_draw_list_clear(list) == WPL_RESULT_OK);
+  assert(wpl_draw_push_clip(list, wpl_test_rect()) == WPL_RESULT_OK);
+  assert(wpl_draw_push_clip(list, wpl_test_rect()) == WPL_RESULT_OK);
+  assert(wpl_draw_pop_clip(list) == WPL_RESULT_OK);
+  assert(wpl_draw_pop_clip(list) == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 4u);
+  assert(wpl_draw_pop_clip(list) == WPL_RESULT_INVALID_ARGUMENT);
+
+  assert(wpl_draw_list_clear(list) == WPL_RESULT_OK);
+  assert(wpl_draw_push_clip(list, wpl_test_rect()) == WPL_RESULT_OK);
+  assert(wpl_draw_list_clear(list) == WPL_RESULT_OK);
+  assert(wpl_draw_pop_clip(list) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  wpl_destroy_draw_list(list);
+}
+
+static void
+test_clip_capacity_failures_preserve_state(void)
+{
+  WplDrawList* list = wpl_test_create_list(1u);
+  size_t before;
+
+  assert(wpl_draw_clear(list, wpl_test_color()) == WPL_RESULT_OK);
+  before = wpl_draw_list_count(list);
+  assert(wpl_draw_push_clip(list, wpl_test_rect())
+         == WPL_RESULT_CAPACITY_EXCEEDED);
+  assert(wpl_draw_list_count(list) == before);
+
+  assert(wpl_draw_list_clear(list) == WPL_RESULT_OK);
+  assert(wpl_draw_push_clip(list, wpl_test_rect()) == WPL_RESULT_OK);
+  before = wpl_draw_list_count(list);
+  assert(wpl_draw_pop_clip(list) == WPL_RESULT_CAPACITY_EXCEEDED);
+  assert(wpl_draw_list_count(list) == before);
+
+  assert(wpl_draw_list_clear(list) == WPL_RESULT_OK);
+  assert(wpl_draw_pop_clip(list) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  wpl_destroy_draw_list(list);
+}
+
 static void
 test_zero_sized_shapes_are_accepted(void)
 {
@@ -734,6 +836,9 @@ main(void)
   test_dashed_line_degenerate_line_appends_zero();
   test_dashed_line_success_counts_and_append_position();
   test_dashed_line_capacity_failure_preserves_count();
+  test_clip_validation();
+  test_clip_push_pop_counts_and_clear();
+  test_clip_capacity_failures_preserve_state();
   test_zero_sized_shapes_are_accepted();
   return 0;
 }
