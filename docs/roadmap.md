@@ -65,18 +65,15 @@ documented WNG fallback is becoming harmful.
 
 - WPL-FR-WNG-001 — Public ASCII text measurement
 - WPL-FR-WNG-002 — Public text command byte limit
-
-### v0.1.1 Candidate: Immediate WNG Support
-
 - WPL-FR-WNG-011 — Atomic file write helper
 
-### v0.1.2 Candidate: Graph Rendering Primitives
+### v0.1.1 Candidate: Graph Rendering Primitives
 
 - WPL-FR-WNG-003 — Polyline or cubic Bezier primitive
 - WPL-FR-WNG-004 — Dashed line primitive
 - WPL-FR-WNG-006 — Clip rectangle stack
 
-### v0.1.3 Candidate: Editor Usability Support
+### v0.1.2 Candidate: Editor Usability Support
 
 - WPL-FR-WNG-005 — Cursor shape API
 - WPL-FR-WNG-008 — User-supplied debug overlay lines

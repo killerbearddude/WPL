@@ -19,6 +19,9 @@ WplResult wpl_read_entire_file(const char* path, WplFileData* out_data);
 WplResult wpl_write_entire_file(const char* path,
                                 const void* data,
                                 size_t size);
+WplResult wpl_write_entire_file_atomic(const char* path,
+                                       const void* data,
+                                       size_t size);
 void wpl_free_file_data(WplFileData* data);
 
 #ifdef __cplusplus

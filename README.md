@@ -170,7 +170,8 @@ APIs.
 - No anti-aliasing.
 - ASCII bitmap text only.
 - No Unicode text shaping.
-- No atomic file-write protocol.
+- The `v0.1.0` tag has no atomic file-write protocol; post-v0.1 `main` now
+  includes a low-level atomic whole-file write helper.
 - Replay v1 only.
 - X11 renderer supports common TrueColor visuals with RGB masks
   `0x00ff0000`, `0x0000ff00`, and `0x000000ff`.
@@ -192,6 +193,10 @@ hit testing, selection rules, editor command logic, widgets, or layout systems.
 Post-v0.1 `main` additionally includes public ASCII text measurement and a
 public text command byte limit for WNG planning. These are not part of the
 `v0.1.0` tag until a later release is cut.
+
+Post-v0.1 `main` also includes atomic whole-file write support for safer host
+persistence workflows. This remains low-level file I/O infrastructure and does
+not add graph serialization or file format policy.
 
 ## License
 
