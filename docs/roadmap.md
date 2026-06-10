@@ -52,6 +52,42 @@ issues are discovered.
 - Backend-independent software renderer split, if the X11 renderer grows too
   backend-coupled.
 
+## Post-v0.1 WNG-Driven Roadmap
+
+WNG feature requests are tracked in:
+
+- `docs/wpl_feature_requests.md`
+
+A WPL feature request becomes active only when a WNG milestone needs it and the
+documented WNG fallback is becoming harmful.
+
+### v0.1.1 Candidate: Immediate WNG Support
+
+- WPL-FR-WNG-001 — Public ASCII text measurement
+- WPL-FR-WNG-002 — Public text command byte limit
+- WPL-FR-WNG-011 — Atomic file write helper
+
+### v0.1.2 Candidate: Graph Rendering Primitives
+
+- WPL-FR-WNG-003 — Polyline or cubic Bezier primitive
+- WPL-FR-WNG-004 — Dashed line primitive
+- WPL-FR-WNG-006 — Clip rectangle stack
+
+### v0.1.3 Candidate: Editor Usability Support
+
+- WPL-FR-WNG-005 — Cursor shape API
+- WPL-FR-WNG-008 — User-supplied debug overlay lines
+- WPL-FR-WNG-009 — Panel and rounded rectangle primitives
+
+### Deferred / Future
+
+- WPL-FR-WNG-007 — Clipboard text API
+- WPL-FR-WNG-010 — Expanded key and modifier support
+- WPL-FR-WNG-012 — Native file dialog API
+- WPL-FR-WNG-013 — High-DPI policy
+- WPL-FR-WNG-014 — Anti-aliased primitive rendering
+- WPL-FR-WNG-015 — Extended text support
+
 ## Explicit Non-Goals
 
 - GUI widgets.
