@@ -171,3 +171,12 @@ Before tagging `v0.1`:
 - [ ] Review `README.md` for current quickstart accuracy.
 - [ ] Confirm README quickstart works on a clean Ubuntu-like machine.
 - [ ] Review this checklist for unresolved blockers.
+## Tag Preparation
+
+- [x] `CHANGELOG.md` exists.
+- [x] `docs/release_notes_v0.1.md` exists.
+- [x] `docs/release_process.md` exists.
+- [ ] Release-prep PR merged.
+- [ ] CI passes on release-prep commit.
+- [ ] Annotated tag `v0.1.0` created from `main`.
+- [ ] GitHub release created from `docs/release_notes_v0.1.md`.
