@@ -55,6 +55,7 @@ Blocker status values:
 - **Blocking**: WNG should not proceed without the WPL support.
 - **Near-term**: WNG can proceed temporarily, but the fallback should not remain
   permanent.
+- **Implemented after v0.1**: Completed on `main` after the `v0.1.0` tag.
 - **Deferred**: Acceptable to postpone until a later WNG milestone.
 - **Non-blocking**: Helpful, but not required for planned WNG work.
 
@@ -84,7 +85,7 @@ Blocker status values:
 
 - **Implementation status:** Implemented after v0.1 in Patch 022.
 - **Priority:** P0
-- **Blocker status:** Near-term
+- **Blocker status:** Implemented after v0.1
 - **Need:** WNG needs deterministic sizing for labels, port names, diagnostics,
   and lightweight canvas annotations before issuing draw commands.
 - **Requested API direction:** Public fixed-font ASCII measurement helpers, such
@@ -100,7 +101,7 @@ Blocker status values:
 
 - **Implementation status:** Implemented after v0.1 in Patch 022.
 - **Priority:** P0
-- **Blocker status:** Near-term
+- **Blocker status:** Implemented after v0.1
 - **Need:** WNG needs to clamp or split debug/label text before appending draw
   commands without depending on private implementation limits.
 - **Requested API direction:** Public constant for maximum bytes accepted by a
@@ -138,7 +139,7 @@ Blocker status values:
   into an existing line command. This preserves the fixed-capacity draw-list
   model and avoids introducing a renderer-specific dashed-line command.
 - **Priority:** P1
-- **Blocker status:** Near-term
+- **Blocker status:** Implemented after v0.1
 - **Need:** WNG needs visual distinctions for pending links, selection previews,
   invalid connections, and diagnostics.
 - **Requested API direction:** Add a dashed line draw command or a dash option on
@@ -155,7 +156,7 @@ Blocker status values:
 - **Implementation note:** X11 cursor handles and cursor font constants remain
   backend-private; public headers expose only platform-neutral cursor shapes.
 - **Priority:** P1
-- **Blocker status:** Deferred
+- **Blocker status:** Implemented after v0.1
 - **Need:** WNG needs standard cursor feedback for panning, link dragging,
   resizing affordances, and text-like interactions.
 - **Requested API direction:** Public cursor-shape API with a small enum of
@@ -172,7 +173,7 @@ Blocker status values:
   subsequent draw commands in order. Nested clips intersect. Clip state resets
   at each `wpl_submit_draw_list` call.
 - **Priority:** P1
-- **Blocker status:** Near-term
+- **Blocker status:** Implemented after v0.1
 - **Need:** WNG needs to constrain canvas panels, inspectors, minimap regions,
   and debug overlays without implementing framebuffer clipping itself.
 - **Requested API direction:** Add draw-list clip push/pop commands or an
@@ -202,7 +203,7 @@ Blocker status values:
 - **Implementation note:** WPL appends caller-provided label/value lines as
   debug overlay text. WPL does not parse, categorize, or own WNG diagnostics.
 - **Priority:** P1
-- **Blocker status:** Deferred
+- **Blocker status:** Implemented after v0.1
 - **Need:** WNG needs to display application diagnostics near WPL's existing
   overlay without implementing a separate overlay path.
 - **Requested API direction:** Extend debug overlay input to accept bounded
@@ -218,7 +219,7 @@ Blocker status values:
 - **Implementation note:** These are visual draw helpers only. WPL does not own
   layout, hit testing, node identity, selection, widget state, or editor policy.
 - **Priority:** P1
-- **Blocker status:** Deferred
+- **Blocker status:** Implemented after v0.1
 - **Need:** WNG needs simple visual containers and node bodies without creating a
   widget system in WPL.
 - **Requested API direction:** Add panel-style rectangle helpers and/or rounded
@@ -243,7 +244,7 @@ Blocker status values:
 ### WPL-FR-WNG-011 Atomic file write helper
 
 - **Priority:** P0
-- **Blocker status:** Near-term
+- **Blocker status:** Implemented after v0.1
 - **Implementation status:** Implemented after v0.1 in Patch 023.
 - **Need:** WNG needs safer graph-save behavior than direct truncate/write for
   user-authored files.

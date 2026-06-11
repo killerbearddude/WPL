@@ -96,10 +96,11 @@ wpl_draw_vec2_lerp(WplVec2 a, WplVec2 b, float t)
 }
 
 static WplResult
-wpl_draw_dashed_line_segment_count(WplVec2 a,
-                                   WplVec2 b,
-                                   WplDashPattern pattern,
-                                   size_t* out_count)
+wpl_draw_dashed_line_segment_count_limited(WplVec2 a,
+                                           WplVec2 b,
+                                           WplDashPattern pattern,
+                                           size_t max_segments,
+                                           size_t* out_count)
 {
   float length;
   float period;
@@ -127,12 +128,12 @@ wpl_draw_dashed_line_segment_count(WplVec2 a,
     {
       float next_distance;
 
-      if (count == SIZE_MAX)
-        return WPL_RESULT_UNSUPPORTED;
+      if (count >= max_segments)
+        return WPL_RESULT_CAPACITY_EXCEEDED;
 
       count++;
       next_distance = distance + period;
-      if (next_distance <= distance)
+      if (!wpl_draw_float_is_finite(next_distance) || next_distance <= distance)
         return WPL_RESULT_UNSUPPORTED;
 
       distance = next_distance;
@@ -637,6 +638,16 @@ wpl_draw_polyline(WplDrawList* list,
   if (point_count < 2u)
     return WPL_RESULT_INVALID_ARGUMENT;
 
+  count_before = list->count;
+  capacity = list->capacity;
+  required_segments = point_count - 1u;
+
+  if (count_before > capacity)
+    return WPL_RESULT_ERROR;
+
+  if ((capacity - count_before) < required_segments)
+    return WPL_RESULT_CAPACITY_EXCEEDED;
+
   if (!wpl_draw_points_are_finite(points, point_count))
     return WPL_RESULT_INVALID_ARGUMENT;
 
@@ -647,16 +658,6 @@ wpl_draw_polyline(WplDrawList* list,
   result = wpl_draw_validate_thickness(thickness);
   if (result != WPL_RESULT_OK)
     return result;
-
-  count_before = list->count;
-  capacity = list->capacity;
-  required_segments = point_count - 1u;
-
-  if (count_before > capacity)
-    return WPL_RESULT_ERROR;
-
-  if ((capacity - count_before) < required_segments)
-    return WPL_RESULT_CAPACITY_EXCEEDED;
 
   for (i = 0u; i + 1u < point_count; i++)
     {
@@ -685,7 +686,9 @@ wpl_draw_dashed_line(WplDrawList* list,
 {
   size_t count_before;
   size_t capacity;
+  size_t remaining_capacity;
   size_t required_segments = 0u;
+  size_t appended_segments = 0u;
   float length;
   float period;
   float distance;
@@ -709,21 +712,21 @@ wpl_draw_dashed_line(WplDrawList* list,
   if (result != WPL_RESULT_OK)
     return result;
 
-  result = wpl_draw_dashed_line_segment_count(a,
-                                              b,
-                                              pattern,
-                                              &required_segments);
-  if (result != WPL_RESULT_OK)
-    return result;
-
   count_before = list->count;
   capacity = list->capacity;
 
   if (count_before > capacity)
     return WPL_RESULT_ERROR;
 
-  if ((capacity - count_before) < required_segments)
-    return WPL_RESULT_CAPACITY_EXCEEDED;
+  remaining_capacity = capacity - count_before;
+
+  result = wpl_draw_dashed_line_segment_count_limited(a,
+                                                      b,
+                                                      pattern,
+                                                      remaining_capacity,
+                                                      &required_segments);
+  if (result != WPL_RESULT_OK)
+    return result;
 
   if (required_segments == 0u)
     return WPL_RESULT_OK;
@@ -754,6 +757,12 @@ wpl_draw_dashed_line(WplDrawList* list,
       p0 = wpl_draw_vec2_lerp(a, b, t0);
       p1 = wpl_draw_vec2_lerp(a, b, t1);
 
+      if (appended_segments >= required_segments)
+        {
+          list->count = count_before;
+          return WPL_RESULT_ERROR;
+        }
+
       result = wpl_draw_line(list, p0, p1, color, thickness);
       if (result != WPL_RESULT_OK)
         {
@@ -761,13 +770,21 @@ wpl_draw_dashed_line(WplDrawList* list,
           return result;
         }
 
-      if (next_distance <= distance)
+      appended_segments++;
+
+      if (!wpl_draw_float_is_finite(next_distance) || next_distance <= distance)
         {
           list->count = count_before;
           return WPL_RESULT_UNSUPPORTED;
         }
 
       distance = next_distance;
+    }
+
+  if (appended_segments != required_segments)
+    {
+      list->count = count_before;
+      return WPL_RESULT_ERROR;
     }
 
   return WPL_RESULT_OK;

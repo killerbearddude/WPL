@@ -1,5 +1,28 @@
 # Changelog
 
+## Unreleased - 0.2.0-dev
+
+Post-v0.1 development on `main`.
+
+### Added
+
+- Public ASCII text measurement and text command byte limit.
+- Atomic whole-file write helper.
+- Polyline draw helper.
+- Dashed-line draw helper.
+- Cursor shape API.
+- Clip rectangle stack.
+- Custom debug overlay lines.
+- Filled rounded rectangles and visual panel helper.
+
+### Changed
+
+- Project development version is now tracked as `0.2.0-dev`.
+
+### Notes
+
+These changes are not part of the `v0.1.0` tag until a future release is cut.
+
 ## v0.1.0 - 2026-06-09
 
 Initial validated WPL release candidate.

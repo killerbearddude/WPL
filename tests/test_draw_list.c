@@ -706,6 +706,27 @@ test_dashed_line_capacity_failure_preserves_count(void)
 }
 
 
+
+static void
+test_dashed_line_tiny_period_capacity_failure_preserves_count(void)
+{
+  WplDrawList* list = wpl_test_create_list(4u);
+  WplVec2 a = wpl_test_vec2(0.0f, 0.0f);
+  WplVec2 b = wpl_test_vec2(1000000.0f, 0.0f);
+  size_t before = wpl_draw_list_count(list);
+
+  assert(wpl_draw_dashed_line(list,
+                              a,
+                              b,
+                              wpl_test_color(),
+                              1.0f,
+                              wpl_test_dash_pattern(0.001f, 0.001f)) ==
+         WPL_RESULT_CAPACITY_EXCEEDED);
+  assert(wpl_draw_list_count(list) == before);
+
+  wpl_destroy_draw_list(list);
+}
+
 static void
 test_clip_validation(void)
 {
@@ -1058,6 +1079,7 @@ main(void)
   test_dashed_line_degenerate_line_appends_zero();
   test_dashed_line_success_counts_and_append_position();
   test_dashed_line_capacity_failure_preserves_count();
+  test_dashed_line_tiny_period_capacity_failure_preserves_count();
   test_clip_validation();
   test_clip_push_pop_counts_and_clear();
   test_clip_capacity_failures_preserve_state();

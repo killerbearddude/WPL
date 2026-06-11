@@ -78,6 +78,50 @@ test_invalid_arguments(void)
   wpl_destroy_draw_list(list);
 }
 
+
+static void
+test_large_extra_line_count_is_bounded_before_array_walk(void)
+{
+  WplDrawList* list = NULL;
+  WplDebugStats stats = wpl_test_stats();
+  WplInputState input = wpl_test_input();
+  WplDebugLine line = {"A", "B"};
+  size_t before = 0u;
+
+  assert(wpl_create_draw_list(WPL_TEST_DEBUG_OVERLAY_COMMAND_COUNT + 1u, &list) ==
+         WPL_RESULT_OK);
+
+  before = wpl_draw_list_count(list);
+  assert(wpl_debug_draw_overlay_ex(list,
+                                   &stats,
+                                   &input,
+                                   &line,
+                                   (size_t)-1) == WPL_RESULT_UNSUPPORTED);
+  assert(wpl_draw_list_count(list) == before);
+
+  wpl_destroy_draw_list(list);
+}
+
+static void
+test_capacity_failure_can_precede_custom_line_validation(void)
+{
+  WplDrawList* list = NULL;
+  WplDebugStats stats = wpl_test_stats();
+  WplInputState input = wpl_test_input();
+  WplDebugLine invalid_line = {NULL, "42"};
+  size_t before = 0u;
+
+  assert(wpl_create_draw_list(WPL_TEST_DEBUG_OVERLAY_COMMAND_COUNT, &list) ==
+         WPL_RESULT_OK);
+
+  before = wpl_draw_list_count(list);
+  assert(wpl_debug_draw_overlay_ex(list, &stats, &input, &invalid_line, 1u) ==
+         WPL_RESULT_CAPACITY_EXCEEDED);
+  assert(wpl_draw_list_count(list) == before);
+
+  wpl_destroy_draw_list(list);
+}
+
 static void
 test_backend_name_null_succeeds(void)
 {
@@ -230,6 +274,8 @@ int
 main(void)
 {
   test_invalid_arguments();
+  test_large_extra_line_count_is_bounded_before_array_walk();
+  test_capacity_failure_can_precede_custom_line_validation();
   test_backend_name_null_succeeds();
   test_insufficient_capacity_does_not_mutate_count();
   test_success_appends_expected_count();

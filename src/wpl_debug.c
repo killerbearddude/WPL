@@ -154,9 +154,11 @@ wpl_debug_draw_overlay_ex(WplDrawList* list,
   if (input == NULL)
     return WPL_RESULT_INVALID_ARGUMENT;
 
-  result = wpl_debug_validate_custom_lines(lines, line_count);
-  if (result != WPL_RESULT_OK)
-    return result;
+  if (lines == NULL && line_count > 0u)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  if (line_count > WPL_DEBUG_MAX_EXTRA_LINES)
+    return WPL_RESULT_UNSUPPORTED;
 
   if (line_count > ((size_t)-1) - WPL_DEBUG_BASE_COMMAND_COUNT)
     return WPL_RESULT_UNSUPPORTED;
@@ -168,6 +170,10 @@ wpl_debug_draw_overlay_ex(WplDrawList* list,
     return result;
 
   result = wpl_debug_overlay_height(line_count, &background_height);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  result = wpl_debug_validate_custom_lines(lines, line_count);
   if (result != WPL_RESULT_OK)
     return result;
 

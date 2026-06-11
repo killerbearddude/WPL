@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(wpl
-  VERSION 0.1.0
+  VERSION 0.2.0
   DESCRIPTION "Whacky Platform Layer"
   LANGUAGES C
 )
@@ -9,8 +9,6 @@ project(wpl
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
-
-find_package(X11 REQUIRED)
 
 enable_testing()
 
@@ -40,6 +38,8 @@ target_link_libraries(wpl_core
   PUBLIC
     m
 )
+
+find_package(X11 REQUIRED)
 
 add_library(wpl_linux_x11 STATIC
   backends/linux_x11/wpl_linux_x11_window.c
