@@ -6,15 +6,18 @@ layer for canvas-heavy custom UI foundations and future node graph tools.
 WPL owns platform interaction and low-level service infrastructure. Higher-level
 application code owns UI behavior, editor behavior, and node graph semantics.
 
-## Current status
+## Status
 
-WPL is a v0.1 release candidate with zero-trust validation status: **PASS**.
+`v0.1.0` is the first validated WPL release.
 
-Validation evidence is recorded in:
+`main` is now post-v0.1 development toward `0.2.0-dev`. The `0.2.0`
+version number is a development target only; no `v0.2.0` release has been cut.
+
+Validation evidence for `v0.1.0` is recorded in:
 
 - `docs/validation_report_v0.1.md`
 
-Release notes are prepared in:
+Release notes for `v0.1.0` are recorded in:
 
 - `docs/release_notes_v0.1.md`
 
@@ -165,7 +168,6 @@ APIs.
 - One active window.
 - Software rendering only.
 - No high-DPI support.
-- No clipping API.
 - No anti-aliasing.
 - ASCII bitmap text only.
 - No Unicode text shaping.

@@ -25,7 +25,7 @@
   header validation, X11 visual-mask validation, renderer cast safety, and
   input transition test expansion.
 
-## v0.1 Blockers
+## Historical v0.1 Release Gate
 
 - Confirm CI remains green on `main`.
 - Confirm README quickstart works on a clean Ubuntu machine.
@@ -34,9 +34,11 @@
 - Manually validate XKB detectable auto-repeat and fallback repeat suppression
   across representative X11 configurations.
 
+These items were resolved or explicitly accepted before the `v0.1.0` tag. They
+remain here as release history, not as active blockers for current `main`.
+
 Patch 017 resolved the hard spec-conformance blockers found after the initial
-release-readiness review. Remaining work is validation-oriented unless new
-issues are discovered.
+release-readiness review.
 
 ## Deferred Until After v0.1
 
@@ -72,13 +74,10 @@ documented WNG fallback is becoming harmful.
 - WPL-FR-WNG-008 — User-supplied debug overlay lines
 - WPL-FR-WNG-009 — Panel and rounded rectangle primitives
 
-### v0.1.1 Candidate: Graph Rendering Primitives
-
-- WPL-FR-WNG-003 — Cubic Bezier primitive, deferred until WNG proves need
-
-### v0.1.2 Candidate: Editor Usability Support
+### Active Candidates
 
 No additional WNG-driven request is promoted automatically after Patch 029.
+Future work should come from concrete WNG integration pressure.
 
 ### Deferred / Future
 
