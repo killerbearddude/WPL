@@ -70,6 +70,7 @@ documented WNG fallback is becoming harmful.
 - WPL-FR-WNG-006 — Clip rectangle stack
 - WPL-FR-WNG-005 — Cursor shape API
 - WPL-FR-WNG-008 — User-supplied debug overlay lines
+- WPL-FR-WNG-009 — Panel and rounded rectangle primitives
 
 ### v0.1.1 Candidate: Graph Rendering Primitives
 
@@ -77,12 +78,12 @@ documented WNG fallback is becoming harmful.
 
 ### v0.1.2 Candidate: Editor Usability Support
 
-- WPL-FR-WNG-009 — Panel and rounded rectangle primitives
+No additional WNG-driven request is promoted automatically after Patch 029.
 
 ### Deferred / Future
 
-- WPL-FR-WNG-007 — Clipboard text API
 - WPL-FR-WNG-010 — Expanded key and modifier support
+- WPL-FR-WNG-007 — Clipboard text API
 - WPL-FR-WNG-012 — Native file dialog API
 - WPL-FR-WNG-013 — High-DPI policy
 - WPL-FR-WNG-014 — Anti-aliased primitive rendering

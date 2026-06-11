@@ -32,6 +32,14 @@ typedef struct WplDashPattern
   float gap_length;
 } WplDashPattern;
 
+typedef struct WplPanelStyle
+{
+  WplColor fill_color;
+  WplColor border_color;
+  float border_thickness;
+  float corner_radius;
+} WplPanelStyle;
+
 WplResult wpl_create_draw_list(size_t max_commands, WplDrawList** out_list);
 void wpl_destroy_draw_list(WplDrawList* list);
 WplResult wpl_draw_list_clear(WplDrawList* list);
@@ -40,6 +48,13 @@ size_t wpl_draw_list_capacity(const WplDrawList* list);
 
 WplResult wpl_draw_clear(WplDrawList* list, WplColor color);
 WplResult wpl_draw_rect(WplDrawList* list, WplRect rect, WplColor color);
+WplResult wpl_draw_rounded_rect(WplDrawList* list,
+                                WplRect rect,
+                                float radius,
+                                WplColor color);
+WplResult wpl_draw_panel(WplDrawList* list,
+                         WplRect rect,
+                         WplPanelStyle style);
 WplResult wpl_draw_rect_outline(WplDrawList* list,
                                 WplRect rect,
                                 WplColor color,

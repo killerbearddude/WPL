@@ -160,6 +160,18 @@ wpl_linux_x11_max_float(float a, float b)
   return a > b ? a : b;
 }
 
+static float
+wpl_linux_x11_clamp_float(float value, float min_value, float max_value)
+{
+  if (value < min_value)
+    return min_value;
+
+  if (value > max_value)
+    return max_value;
+
+  return value;
+}
+
 static WplLinuxX11RenderClip
 wpl_linux_x11_full_clip(const WplWindow* window)
 {
@@ -585,6 +597,97 @@ wpl_linux_x11_render_rect(WplWindow* window, WplRect rect, WplColor color)
 }
 
 static void
+wpl_linux_x11_render_rounded_rect(WplWindow* window,
+                                  WplRect rect,
+                                  float radius,
+                                  WplColor color)
+{
+  float clamped_radius;
+  float left;
+  float right;
+  float top;
+  float bottom;
+  float radius_sq;
+  int x0;
+  int y0;
+  int x1;
+  int y1;
+  int x;
+  int y;
+
+  if (window == NULL || window->framebuffer == NULL)
+    return;
+
+  if (rect.w <= 0.0f || rect.h <= 0.0f)
+    return;
+
+  if (radius <= 0.0f)
+    {
+      wpl_linux_x11_render_rect(window, rect, color);
+      return;
+    }
+
+  clamped_radius = wpl_linux_x11_clamp_float(
+    radius,
+    0.0f,
+    wpl_linux_x11_min_float(rect.w, rect.h) * 0.5f);
+
+  if (clamped_radius <= 0.0f)
+    {
+      wpl_linux_x11_render_rect(window, rect, color);
+      return;
+    }
+
+  x0 = wpl_linux_x11_floor_to_int_clamped(rect.x,
+                                           0,
+                                           window->framebuffer_width);
+  y0 = wpl_linux_x11_floor_to_int_clamped(rect.y,
+                                           0,
+                                           window->framebuffer_height);
+  x1 = wpl_linux_x11_ceil_to_int_clamped(rect.x + rect.w,
+                                          0,
+                                          window->framebuffer_width);
+  y1 = wpl_linux_x11_ceil_to_int_clamped(rect.y + rect.h,
+                                          0,
+                                          window->framebuffer_height);
+
+  if (x0 >= x1 || y0 >= y1)
+    return;
+
+  left = rect.x + clamped_radius;
+  right = rect.x + rect.w - clamped_radius;
+  top = rect.y + clamped_radius;
+  bottom = rect.y + rect.h - clamped_radius;
+  radius_sq = clamped_radius * clamped_radius;
+
+  for (y = y0; y < y1; y++)
+    {
+      for (x = x0; x < x1; x++)
+        {
+          float px = (float)x + 0.5f;
+          float py = (float)y + 0.5f;
+          bool inside = false;
+
+          if (px >= left && px < right)
+            inside = true;
+          else if (py >= top && py < bottom)
+            inside = true;
+          else
+            {
+              float cx = px < left ? left : right;
+              float cy = py < top ? top : bottom;
+              float dx = px - cx;
+              float dy = py - cy;
+              inside = ((dx * dx + dy * dy) <= radius_sq);
+            }
+
+          if (inside)
+            wpl_linux_x11_blend_pixel_at(window, x, y, color);
+        }
+    }
+}
+
+static void
 wpl_linux_x11_render_rect_outline(WplWindow* window,
                                   WplRect rect,
                                   WplColor color,
@@ -962,6 +1065,13 @@ wpl_submit_draw_list(WplWindow* window, const WplDrawList* list)
 
         case WPL_DRAW_COMMAND_RECT:
           wpl_linux_x11_render_rect(window, command->rect, command->color);
+          break;
+
+        case WPL_DRAW_COMMAND_ROUNDED_RECT:
+          wpl_linux_x11_render_rounded_rect(window,
+                                            command->rect,
+                                            command->radius,
+                                            command->color);
           break;
 
         case WPL_DRAW_COMMAND_RECT_OUTLINE:
