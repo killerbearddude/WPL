@@ -44,7 +44,6 @@ issues are discovered.
 - Multiple windows.
 - Wayland investigation.
 - Anti-aliased rasterization.
-- Public clipping API.
 - Richer text support.
 - Allocator hooks.
 - Sanitizer CI.
@@ -70,6 +69,7 @@ documented WNG fallback is becoming harmful.
 - WPL-FR-WNG-004 — Dashed line draw helper
 - WPL-FR-WNG-006 — Clip rectangle stack
 - WPL-FR-WNG-005 — Cursor shape API
+- WPL-FR-WNG-008 — User-supplied debug overlay lines
 
 ### v0.1.1 Candidate: Graph Rendering Primitives
 
@@ -77,7 +77,6 @@ documented WNG fallback is becoming harmful.
 
 ### v0.1.2 Candidate: Editor Usability Support
 
-- WPL-FR-WNG-008 — User-supplied debug overlay lines
 - WPL-FR-WNG-009 — Panel and rounded rectangle primitives
 
 ### Deferred / Future
