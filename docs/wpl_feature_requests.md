@@ -70,7 +70,7 @@ Blocker status values:
 | WPL-FR-WNG-006 | Clip rectangle stack | P1 | Implemented after v0.1 |
 | WPL-FR-WNG-007 | Clipboard text API | P2 | Deferred |
 | WPL-FR-WNG-008 | User-supplied debug overlay lines | P1 | Implemented after v0.1 |
-| WPL-FR-WNG-009 | Panel and rounded rectangle primitives | P1 | Deferred |
+| WPL-FR-WNG-009 | Panel and rounded rectangle primitives | P1 | Implemented after v0.1 |
 | WPL-FR-WNG-010 | Expanded key and modifier support | P2 | Deferred |
 | WPL-FR-WNG-011 | Atomic file write helper | P0 | Implemented after v0.1 |
 | WPL-FR-WNG-012 | Native file dialog API | P3 | Non-blocking |
@@ -213,6 +213,10 @@ Blocker status values:
 
 ### WPL-FR-WNG-009 Panel and rounded rectangle primitives
 
+- **Implementation status:** Implemented after v0.1 in Patch 029 as
+  `wpl_draw_rounded_rect`, `WplPanelStyle`, and `wpl_draw_panel`.
+- **Implementation note:** These are visual draw helpers only. WPL does not own
+  layout, hit testing, node identity, selection, widget state, or editor policy.
 - **Priority:** P1
 - **Blocker status:** Deferred
 - **Need:** WNG needs simple visual containers and node bodies without creating a

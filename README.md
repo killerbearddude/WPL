@@ -54,7 +54,6 @@ See `docs/release_checklist.md`, `docs/validation_report_v0.1.md`, `docs/release
 
 WPL deliberately does not provide:
 
-- SDL support.
 - Wayland support.
 - Windows or macOS support.
 - GPU abstraction.
@@ -217,6 +216,10 @@ the `v0.1.0` tag.
 Post-v0.1 `main` additionally includes custom debug overlay lines through
 `wpl_debug_draw_overlay_ex`. WPL appends caller-provided diagnostics as draw
 commands and does not interpret graph/editor state.
+
+Post-v0.1 `main` additionally includes filled rounded rectangles and a visual
+panel helper for canvas rendering experiments. These are drawing primitives only
+and do not add widget, layout, graph, or editor behavior.
 
 ## License
 

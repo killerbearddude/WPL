@@ -167,6 +167,18 @@ wpl_draw_validate_thickness(float thickness)
 }
 
 static WplResult
+wpl_draw_validate_radius(float radius)
+{
+  if (!wpl_draw_float_is_finite(radius))
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  if (radius < 0.0f)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  return WPL_RESULT_OK;
+}
+
+static WplResult
 wpl_draw_append_command(WplDrawList* list, const WplDrawCommand* command)
 {
   if (list == NULL || command == NULL)
@@ -418,6 +430,129 @@ wpl_draw_rect(WplDrawList* list, WplRect rect, WplColor color)
   command.rect = rect;
   command.color = color;
   return wpl_draw_append_command(list, &command);
+}
+
+WplResult
+wpl_draw_rounded_rect(WplDrawList* list,
+                      WplRect rect,
+                      float radius,
+                      WplColor color)
+{
+  WplDrawCommand command = {0};
+  WplResult result;
+
+  if (list == NULL)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  result = wpl_draw_validate_rect(rect);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  result = wpl_draw_validate_radius(radius);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  result = wpl_draw_validate_color(color);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  command.type = WPL_DRAW_COMMAND_ROUNDED_RECT;
+  command.rect = rect;
+  command.radius = radius;
+  command.color = color;
+  return wpl_draw_append_command(list, &command);
+}
+
+WplResult
+wpl_draw_panel(WplDrawList* list, WplRect rect, WplPanelStyle style)
+{
+  size_t count_before;
+  size_t required_commands;
+  WplRect inner;
+  float inner_radius;
+  WplResult result;
+
+  if (list == NULL)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  result = wpl_draw_validate_rect(rect);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  result = wpl_draw_validate_color(style.fill_color);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  result = wpl_draw_validate_color(style.border_color);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  result = wpl_draw_validate_thickness(style.border_thickness);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  result = wpl_draw_validate_radius(style.corner_radius);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  required_commands = 1u;
+  inner = rect;
+  inner_radius = style.corner_radius;
+
+  if (style.border_thickness > 0.0f)
+    {
+      float inset = style.border_thickness;
+      inner.x = rect.x + inset;
+      inner.y = rect.y + inset;
+      inner.w = rect.w - (inset * 2.0f);
+      inner.h = rect.h - (inset * 2.0f);
+      inner_radius = style.corner_radius - inset;
+      if (inner_radius < 0.0f)
+        inner_radius = 0.0f;
+
+      if (inner.w > 0.0f && inner.h > 0.0f)
+        required_commands = 2u;
+    }
+
+  count_before = list->count;
+
+  if (count_before > list->capacity)
+    return WPL_RESULT_ERROR;
+
+  if ((list->capacity - count_before) < required_commands)
+    return WPL_RESULT_CAPACITY_EXCEEDED;
+
+  if (style.border_thickness > 0.0f)
+    result = wpl_draw_rounded_rect(list,
+                                   rect,
+                                   style.corner_radius,
+                                   style.border_color);
+  else
+    result = wpl_draw_rounded_rect(list,
+                                   rect,
+                                   style.corner_radius,
+                                   style.fill_color);
+
+  if (result != WPL_RESULT_OK)
+    {
+      list->count = count_before;
+      return result;
+    }
+
+  if (required_commands == 2u)
+    {
+      result = wpl_draw_rounded_rect(list,
+                                     inner,
+                                     inner_radius,
+                                     style.fill_color);
+      if (result != WPL_RESULT_OK)
+        {
+          list->count = count_before;
+          return result;
+        }
+    }
+
+  return WPL_RESULT_OK;
 }
 
 WplResult

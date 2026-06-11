@@ -8,6 +8,7 @@ WPL-owned framebuffer before presentation with XImage/XPutImage.
 
 - Clear
 - Filled rectangle
+- Filled rounded rectangle
 - Rectangle outline
 - Thick line
 - Filled circle
@@ -84,11 +85,22 @@ lines below the built-in overlay. The overlay still emits ordinary draw commands
 and does not render directly. WPL does not parse, categorize, or own the
 caller-provided diagnostics.
 
+
+## Rounded Rectangles and Panels
+
+WPL supports filled rounded rectangles and a simple panel helper.
+
+- Rounded rectangles are rasterized in the software renderer.
+- Radius is clamped to half the smaller rect dimension.
+- Panel rendering is a visual helper that composes outer and inner rounded
+  rectangles.
+- These APIs do not create widgets, layout, hit testing, node identity, or
+  editor behavior.
+
 ## Deferred Renderer Scope
 
 - Public clipping API.
 - Anti-aliasing.
-- Rounded rectangles.
 - Bezier curves.
 - Gradients.
 - Textures.

@@ -14,6 +14,17 @@ wpl_test_color(void)
   return color;
 }
 
+static WplPanelStyle
+wpl_test_panel_style(void)
+{
+  WplPanelStyle style;
+  style.fill_color = wpl_test_color();
+  style.border_color = (WplColor){0.8f, 0.7f, 0.6f, 1.0f};
+  style.border_thickness = 1.0f;
+  style.corner_radius = 3.0f;
+  return style;
+}
+
 static WplRect
 wpl_test_rect(void)
 {
@@ -150,6 +161,10 @@ test_null_list_appends_are_invalid(void)
   assert(wpl_draw_clear(NULL, wpl_test_color())
          == WPL_RESULT_INVALID_ARGUMENT);
   assert(wpl_draw_rect(NULL, wpl_test_rect(), wpl_test_color())
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_rounded_rect(NULL, wpl_test_rect(), 1.0f, wpl_test_color())
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_panel(NULL, wpl_test_rect(), wpl_test_panel_style())
          == WPL_RESULT_INVALID_ARGUMENT);
   assert(wpl_draw_rect_outline(NULL, wpl_test_rect(), wpl_test_color(), 1.0f)
          == WPL_RESULT_INVALID_ARGUMENT);
@@ -792,13 +807,220 @@ test_clip_capacity_failures_preserve_state(void)
   wpl_destroy_draw_list(list);
 }
 
+
+static void
+test_rounded_rect_validation(void)
+{
+  WplDrawList* list = wpl_test_create_list(8u);
+  WplRect rect = wpl_test_rect();
+  WplColor color = wpl_test_color();
+
+  assert(wpl_draw_rounded_rect(NULL, rect, 1.0f, color)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  rect.x = NAN;
+  assert(wpl_draw_rounded_rect(list, rect, 1.0f, color)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  rect = wpl_test_rect();
+  assert(wpl_draw_list_count(list) == 0u);
+
+  rect.y = INFINITY;
+  assert(wpl_draw_rounded_rect(list, rect, 1.0f, color)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  rect = wpl_test_rect();
+  assert(wpl_draw_list_count(list) == 0u);
+
+  rect.w = -1.0f;
+  assert(wpl_draw_rounded_rect(list, rect, 1.0f, color)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  rect = wpl_test_rect();
+  assert(wpl_draw_list_count(list) == 0u);
+
+  rect.h = -1.0f;
+  assert(wpl_draw_rounded_rect(list, rect, 1.0f, color)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  rect = wpl_test_rect();
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_rounded_rect(list, rect, NAN, color)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_rounded_rect(list, rect, INFINITY, color)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_rounded_rect(list, rect, -1.0f, color)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  color = wpl_test_color();
+  color.r = NAN;
+  assert(wpl_draw_rounded_rect(list, rect, 1.0f, color)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  color = wpl_test_color();
+  color.a = INFINITY;
+  assert(wpl_draw_rounded_rect(list, rect, 1.0f, color)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  wpl_destroy_draw_list(list);
+}
+
+static void
+test_rounded_rect_success_and_capacity(void)
+{
+  WplDrawList* list = wpl_test_create_list(4u);
+  WplRect zero_width = wpl_test_rect();
+  WplRect zero_height = wpl_test_rect();
+
+  zero_width.w = 0.0f;
+  zero_height.h = 0.0f;
+
+  assert(wpl_draw_rounded_rect(list, wpl_test_rect(), 0.0f, wpl_test_color())
+         == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 1u);
+
+  assert(wpl_draw_rounded_rect(list, wpl_test_rect(), 1000.0f, wpl_test_color())
+         == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 2u);
+
+  assert(wpl_draw_rounded_rect(list, zero_width, 1.0f, wpl_test_color())
+         == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 3u);
+
+  assert(wpl_draw_rounded_rect(list, zero_height, 1.0f, wpl_test_color())
+         == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 4u);
+
+  assert(wpl_draw_rounded_rect(list, wpl_test_rect(), 1.0f, wpl_test_color())
+         == WPL_RESULT_CAPACITY_EXCEEDED);
+  assert(wpl_draw_list_count(list) == 4u);
+
+  wpl_destroy_draw_list(list);
+}
+
+static void
+test_panel_validation(void)
+{
+  WplDrawList* list = wpl_test_create_list(8u);
+  WplRect rect = wpl_test_rect();
+  WplPanelStyle style = wpl_test_panel_style();
+
+  assert(wpl_draw_panel(NULL, rect, style) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  rect.x = NAN;
+  assert(wpl_draw_panel(list, rect, style) == WPL_RESULT_INVALID_ARGUMENT);
+  rect = wpl_test_rect();
+  assert(wpl_draw_list_count(list) == 0u);
+
+  rect.w = -1.0f;
+  assert(wpl_draw_panel(list, rect, style) == WPL_RESULT_INVALID_ARGUMENT);
+  rect = wpl_test_rect();
+  assert(wpl_draw_list_count(list) == 0u);
+
+  style = wpl_test_panel_style();
+  style.border_thickness = -1.0f;
+  assert(wpl_draw_panel(list, rect, style) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  style = wpl_test_panel_style();
+  style.border_thickness = NAN;
+  assert(wpl_draw_panel(list, rect, style) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  style = wpl_test_panel_style();
+  style.corner_radius = -1.0f;
+  assert(wpl_draw_panel(list, rect, style) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  style = wpl_test_panel_style();
+  style.corner_radius = INFINITY;
+  assert(wpl_draw_panel(list, rect, style) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  style = wpl_test_panel_style();
+  style.fill_color.g = NAN;
+  assert(wpl_draw_panel(list, rect, style) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  style = wpl_test_panel_style();
+  style.border_color.b = INFINITY;
+  assert(wpl_draw_panel(list, rect, style) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  wpl_destroy_draw_list(list);
+}
+
+static void
+test_panel_success_counts_and_append_position(void)
+{
+  WplDrawList* list = wpl_test_create_list(8u);
+  WplPanelStyle style = wpl_test_panel_style();
+  WplRect tiny_rect = {0.0f, 0.0f, 1.0f, 1.0f};
+
+  style.border_thickness = 0.0f;
+  assert(wpl_draw_panel(list, wpl_test_rect(), style) == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 1u);
+
+  assert(wpl_draw_list_clear(list) == WPL_RESULT_OK);
+  style = wpl_test_panel_style();
+  assert(wpl_draw_panel(list, wpl_test_rect(), style) == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 2u);
+
+  assert(wpl_draw_list_clear(list) == WPL_RESULT_OK);
+  style = wpl_test_panel_style();
+  style.border_thickness = 2.0f;
+  assert(wpl_draw_panel(list, tiny_rect, style) == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 1u);
+
+  assert(wpl_draw_list_clear(list) == WPL_RESULT_OK);
+  assert(wpl_draw_clear(list, wpl_test_color()) == WPL_RESULT_OK);
+  style = wpl_test_panel_style();
+  assert(wpl_draw_panel(list, wpl_test_rect(), style) == WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == 3u);
+
+  wpl_destroy_draw_list(list);
+}
+
+static void
+test_panel_capacity_failure_preserves_count(void)
+{
+  WplDrawList* list = wpl_test_create_list(2u);
+  WplPanelStyle style = wpl_test_panel_style();
+  size_t before;
+
+  assert(wpl_draw_clear(list, wpl_test_color()) == WPL_RESULT_OK);
+  before = wpl_draw_list_count(list);
+  assert(wpl_draw_panel(list, wpl_test_rect(), style)
+         == WPL_RESULT_CAPACITY_EXCEEDED);
+  assert(wpl_draw_list_count(list) == before);
+
+  assert(wpl_draw_list_clear(list) == WPL_RESULT_OK);
+  style.border_thickness = 0.0f;
+  assert(wpl_draw_panel(list, wpl_test_rect(), style) == WPL_RESULT_OK);
+  assert(wpl_draw_panel(list, wpl_test_rect(), style) == WPL_RESULT_OK);
+  before = wpl_draw_list_count(list);
+  assert(wpl_draw_panel(list, wpl_test_rect(), style)
+         == WPL_RESULT_CAPACITY_EXCEEDED);
+  assert(wpl_draw_list_count(list) == before);
+
+  wpl_destroy_draw_list(list);
+}
+
 static void
 test_zero_sized_shapes_are_accepted(void)
 {
-  WplDrawList* list = wpl_test_create_list(4u);
+  WplDrawList* list = wpl_test_create_list(5u);
   WplRect rect = {0.0f, 0.0f, 0.0f, 0.0f};
 
   assert(wpl_draw_rect(list, rect, wpl_test_color()) == WPL_RESULT_OK);
+  assert(wpl_draw_rounded_rect(list, rect, 1.0f, wpl_test_color())
+         == WPL_RESULT_OK);
   assert(wpl_draw_rect_outline(list, rect, wpl_test_color(), 0.0f)
          == WPL_RESULT_OK);
   assert(wpl_draw_line(list,
@@ -810,7 +1032,7 @@ test_zero_sized_shapes_are_accepted(void)
   assert(wpl_draw_circle(list, wpl_test_vec2(0.0f, 0.0f), 0.0f,
                          wpl_test_color())
          == WPL_RESULT_OK);
-  assert(wpl_draw_list_count(list) == 4u);
+  assert(wpl_draw_list_count(list) == 5u);
 
   wpl_destroy_draw_list(list);
 }
@@ -839,6 +1061,11 @@ main(void)
   test_clip_validation();
   test_clip_push_pop_counts_and_clear();
   test_clip_capacity_failures_preserve_state();
+  test_rounded_rect_validation();
+  test_rounded_rect_success_and_capacity();
+  test_panel_validation();
+  test_panel_success_counts_and_append_position();
+  test_panel_capacity_failure_preserves_count();
   test_zero_sized_shapes_are_accepted();
   return 0;
 }
