@@ -69,10 +69,10 @@ Blocker status values:
 | WPL-FR-WNG-005 | Cursor shape API | P1 | Implemented after v0.1 |
 | WPL-FR-WNG-006 | Clip rectangle stack | P1 | Implemented after v0.1 |
 | WPL-FR-WNG-007 | Clipboard text API | P2 | Deferred |
-| WPL-FR-WNG-008 | User-supplied debug overlay lines | P1 | Deferred |
+| WPL-FR-WNG-008 | User-supplied debug overlay lines | P1 | Implemented after v0.1 |
 | WPL-FR-WNG-009 | Panel and rounded rectangle primitives | P1 | Deferred |
 | WPL-FR-WNG-010 | Expanded key and modifier support | P2 | Deferred |
-| WPL-FR-WNG-011 | Atomic file write helper | P0 | Near-term |
+| WPL-FR-WNG-011 | Atomic file write helper | P0 | Implemented after v0.1 |
 | WPL-FR-WNG-012 | Native file dialog API | P3 | Non-blocking |
 | WPL-FR-WNG-013 | High-DPI policy | P2 | Deferred |
 | WPL-FR-WNG-014 | Anti-aliased primitive rendering | P2 | Deferred |
@@ -197,6 +197,10 @@ Blocker status values:
 
 ### WPL-FR-WNG-008 User-supplied debug overlay lines
 
+- **Implementation status:** Implemented after v0.1 in Patch 028 as
+  `WplDebugLine` and `wpl_debug_draw_overlay_ex`.
+- **Implementation note:** WPL appends caller-provided label/value lines as
+  debug overlay text. WPL does not parse, categorize, or own WNG diagnostics.
 - **Priority:** P1
 - **Blocker status:** Deferred
 - **Need:** WNG needs to display application diagnostics near WPL's existing

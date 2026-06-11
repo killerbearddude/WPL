@@ -214,6 +214,10 @@ Post-v0.1 `main` additionally includes a small cursor shape API for platform
 cursor feedback. X11 cursor resources remain backend-private and are not part of
 the `v0.1.0` tag.
 
+Post-v0.1 `main` additionally includes custom debug overlay lines through
+`wpl_debug_draw_overlay_ex`. WPL appends caller-provided diagnostics as draw
+commands and does not interpret graph/editor state.
+
 ## License
 
 WPL is released under the MIT License. See `LICENSE`.

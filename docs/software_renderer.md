@@ -77,6 +77,13 @@ WPL supports draw-list clip push/pop commands.
 - Clear commands inside a clip clear only the active clip region.
 - Clip commands are renderer behavior, not widget or layout behavior.
 
+## Debug Overlay Custom Lines
+
+`wpl_debug_draw_overlay_ex` allows callers to append bounded label/value text
+lines below the built-in overlay. The overlay still emits ordinary draw commands
+and does not render directly. WPL does not parse, categorize, or own the
+caller-provided diagnostics.
+
 ## Deferred Renderer Scope
 
 - Public clipping API.
