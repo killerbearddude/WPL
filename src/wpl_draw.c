@@ -646,16 +646,6 @@ wpl_draw_polyline(WplDrawList* list,
   if (point_count < 2u)
     return WPL_RESULT_INVALID_ARGUMENT;
 
-  count_before = list->count;
-  capacity = list->capacity;
-  required_segments = point_count - 1u;
-
-  if (count_before > capacity)
-    return WPL_RESULT_ERROR;
-
-  if ((capacity - count_before) < required_segments)
-    return WPL_RESULT_CAPACITY_EXCEEDED;
-
   if (!wpl_draw_points_are_finite(points, point_count))
     return WPL_RESULT_INVALID_ARGUMENT;
 
@@ -666,6 +656,16 @@ wpl_draw_polyline(WplDrawList* list,
   result = wpl_draw_validate_thickness(thickness);
   if (result != WPL_RESULT_OK)
     return result;
+
+  count_before = list->count;
+  capacity = list->capacity;
+  required_segments = point_count - 1u;
+
+  if (count_before > capacity)
+    return WPL_RESULT_ERROR;
+
+  if ((capacity - count_before) < required_segments)
+    return WPL_RESULT_CAPACITY_EXCEEDED;
 
   for (i = 0u; i + 1u < point_count; i++)
     {

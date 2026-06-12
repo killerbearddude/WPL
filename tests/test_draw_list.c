@@ -462,6 +462,36 @@ test_polyline_capacity_failure_preserves_count(void)
   wpl_destroy_draw_list(list);
 }
 
+static void
+test_polyline_invalid_input_precedes_capacity_failure(void)
+{
+  WplDrawList* list = wpl_test_create_list(1u);
+  WplVec2 points[3] = {
+    {0.0f, 0.0f},
+    {10.0f, 10.0f},
+    {20.0f, 0.0f}
+  };
+  WplColor color = wpl_test_color();
+
+  points[1].x = NAN;
+  assert(wpl_draw_polyline(list, points, 3u, color, 1.0f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+  points[1].x = 10.0f;
+
+  color.g = INFINITY;
+  assert(wpl_draw_polyline(list, points, 3u, color, 1.0f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  color = wpl_test_color();
+  assert(wpl_draw_polyline(list, points, 3u, color, -1.0f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  wpl_destroy_draw_list(list);
+}
+
 static WplDashPattern
 wpl_test_dash_pattern(float dash_length, float gap_length)
 {
@@ -1109,6 +1139,7 @@ main(void)
   test_polyline_validation();
   test_polyline_success_counts_and_append_position();
   test_polyline_capacity_failure_preserves_count();
+  test_polyline_invalid_input_precedes_capacity_failure();
   test_dashed_line_validation();
   test_dashed_line_pattern_validation();
   test_dashed_line_degenerate_line_appends_zero();
