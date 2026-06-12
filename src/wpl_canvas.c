@@ -148,6 +148,7 @@ wpl_canvas_zoom_around(WplCanvasView* view,
                        WplVec2 cursor_screen,
                        float zoom_factor)
 {
+  WplCanvasView next;
   WplVec2 canvas_before;
   WplResult result;
 
@@ -164,15 +165,17 @@ wpl_canvas_zoom_around(WplCanvasView* view,
   if (result != WPL_RESULT_OK)
     return result;
 
-  view->zoom = wpl_clamp_float(view->zoom * zoom_factor,
-                               view->min_zoom,
-                               view->max_zoom);
-  view->pan.x = cursor_screen.x - canvas_before.x * view->zoom;
-  view->pan.y = cursor_screen.y - canvas_before.y * view->zoom;
+  next = *view;
+  next.zoom = wpl_clamp_float(view->zoom * zoom_factor,
+                              view->min_zoom,
+                              view->max_zoom);
+  next.pan.x = cursor_screen.x - canvas_before.x * next.zoom;
+  next.pan.y = cursor_screen.y - canvas_before.y * next.zoom;
 
-  if (!wpl_canvas_view_is_valid(view))
+  if (!wpl_canvas_view_is_valid(&next))
     return WPL_RESULT_INVALID_ARGUMENT;
 
+  *view = next;
   return WPL_RESULT_OK;
 }
 
