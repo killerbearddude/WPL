@@ -2,6 +2,8 @@
 
 #include "wpl_linux_x11_internal.h"
 
+#include "wpl/wpl_time.h"
+
 static const WplBackendVTable wpl_linux_x11_vtable = {
   "linux_x11",
   wpl_create_window,
