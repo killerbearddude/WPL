@@ -105,9 +105,9 @@ static uint32_t
 wpl_linux_x11_color_to_pixel_opaque(WplColor color)
 {
   return wpl_linux_x11_pack_opaque_pixel(
-      wpl_linux_x11_float_to_u8(color.r),
-      wpl_linux_x11_float_to_u8(color.g),
-      wpl_linux_x11_float_to_u8(color.b));
+    wpl_linux_x11_float_to_u8(color.r),
+    wpl_linux_x11_float_to_u8(color.g),
+    wpl_linux_x11_float_to_u8(color.b));
 }
 
 static uint32_t
@@ -202,6 +202,28 @@ wpl_linux_x11_intersect_clip(WplLinuxX11RenderClip a,
   result.x1 = a.x1 < b.x1 ? a.x1 : b.x1;
   result.y1 = a.y1 < b.y1 ? a.y1 : b.y1;
   return result;
+}
+
+static bool
+wpl_linux_x11_clip_bounds_to_active(const WplWindow* window,
+                                    int* x0,
+                                    int* y0,
+                                    int* x1,
+                                    int* y1)
+{
+  if (window == NULL || x0 == NULL || y0 == NULL || x1 == NULL || y1 == NULL)
+    return false;
+
+  if (*x0 < window->active_clip.x0)
+    *x0 = window->active_clip.x0;
+  if (*y0 < window->active_clip.y0)
+    *y0 = window->active_clip.y0;
+  if (*x1 > window->active_clip.x1)
+    *x1 = window->active_clip.x1;
+  if (*y1 > window->active_clip.y1)
+    *y1 = window->active_clip.y1;
+
+  return *x0 < *x1 && *y0 < *y1;
 }
 
 static WplLinuxX11RenderClip
@@ -313,13 +335,23 @@ wpl_linux_x11_pop_clip(WplWindow* window)
 }
 
 static void
+wpl_linux_x11_blend_pixel_unchecked(WplWindow* window,
+                                    int x,
+                                    int y,
+                                    WplColor color)
+{
+  uint32_t* pixel = &window->framebuffer[((size_t)y
+                                          * (size_t)window->framebuffer_width)
+                                         + (size_t)x];
+  *pixel = wpl_linux_x11_blend_pixel_opaque(*pixel, color);
+}
+
+static void
 wpl_linux_x11_blend_pixel_at(WplWindow* window,
                              int x,
                              int y,
                              WplColor color)
 {
-  uint32_t* pixel;
-
   if (window == NULL || window->framebuffer == NULL)
     return;
 
@@ -331,10 +363,7 @@ wpl_linux_x11_blend_pixel_at(WplWindow* window,
       || y < window->active_clip.y0 || y >= window->active_clip.y1)
     return;
 
-  pixel = &window->framebuffer[((size_t)y
-                                * (size_t)window->framebuffer_width)
-                               + (size_t)x];
-  *pixel = wpl_linux_x11_blend_pixel_opaque(*pixel, color);
+  wpl_linux_x11_blend_pixel_unchecked(window, x, y, color);
 }
 
 static float
@@ -586,13 +615,13 @@ wpl_linux_x11_render_rect(WplWindow* window, WplRect rect, WplColor color)
                                           0,
                                           window->framebuffer_height);
 
-  if (x0 >= x1 || y0 >= y1)
+  if (!wpl_linux_x11_clip_bounds_to_active(window, &x0, &y0, &x1, &y1))
     return;
 
   for (y = y0; y < y1; y++)
     {
       for (x = x0; x < x1; x++)
-        wpl_linux_x11_blend_pixel_at(window, x, y, color);
+        wpl_linux_x11_blend_pixel_unchecked(window, x, y, color);
     }
 }
 
@@ -651,7 +680,7 @@ wpl_linux_x11_render_rounded_rect(WplWindow* window,
                                           0,
                                           window->framebuffer_height);
 
-  if (x0 >= x1 || y0 >= y1)
+  if (!wpl_linux_x11_clip_bounds_to_active(window, &x0, &y0, &x1, &y1))
     return;
 
   left = rect.x + clamped_radius;
@@ -682,7 +711,7 @@ wpl_linux_x11_render_rounded_rect(WplWindow* window,
             }
 
           if (inside)
-            wpl_linux_x11_blend_pixel_at(window, x, y, color);
+            wpl_linux_x11_blend_pixel_unchecked(window, x, y, color);
         }
     }
 }
@@ -701,10 +730,6 @@ wpl_linux_x11_render_rect_outline(WplWindow* window,
   int iy0;
   int ix1;
   int iy1;
-  int clamped_x0;
-  int clamped_y0;
-  int clamped_x1;
-  int clamped_y1;
   int x;
   int y;
 
@@ -740,23 +765,18 @@ wpl_linux_x11_render_rect_outline(WplWindow* window,
                                            0,
                                            window->framebuffer_height);
 
-  clamped_x0 = x0;
-  clamped_y0 = y0;
-  clamped_x1 = x1;
-  clamped_y1 = y1;
-
-  if (clamped_x0 >= clamped_x1 || clamped_y0 >= clamped_y1)
+  if (!wpl_linux_x11_clip_bounds_to_active(window, &x0, &y0, &x1, &y1))
     return;
 
-  for (y = clamped_y0; y < clamped_y1; y++)
+  for (y = y0; y < y1; y++)
     {
-      for (x = clamped_x0; x < clamped_x1; x++)
+      for (x = x0; x < x1; x++)
         {
           bool inside_inner = (ix0 < ix1 && iy0 < iy1 && x >= ix0
                                && x < ix1 && y >= iy0 && y < iy1);
 
           if (!inside_inner)
-            wpl_linux_x11_blend_pixel_at(window, x, y, color);
+            wpl_linux_x11_blend_pixel_unchecked(window, x, y, color);
         }
     }
 }
@@ -803,7 +823,7 @@ wpl_linux_x11_render_line(WplWindow* window,
     0,
     window->framebuffer_height);
 
-  if (x0 >= x1 || y0 >= y1)
+  if (!wpl_linux_x11_clip_bounds_to_active(window, &x0, &y0, &x1, &y1))
     return;
 
   for (y = y0; y < y1; y++)
@@ -817,7 +837,7 @@ wpl_linux_x11_render_line(WplWindow* window,
                                                                       a,
                                                                       b);
           if (distance_sq <= radius_sq)
-            wpl_linux_x11_blend_pixel_at(window, x, y, color);
+            wpl_linux_x11_blend_pixel_unchecked(window, x, y, color);
         }
     }
 }
@@ -856,7 +876,7 @@ wpl_linux_x11_render_circle(WplWindow* window,
                                           0,
                                           window->framebuffer_height);
 
-  if (x0 >= x1 || y0 >= y1)
+  if (!wpl_linux_x11_clip_bounds_to_active(window, &x0, &y0, &x1, &y1))
     return;
 
   for (y = y0; y < y1; y++)
@@ -866,17 +886,17 @@ wpl_linux_x11_render_circle(WplWindow* window,
           float dx = ((float)x + 0.5f) - center.x;
           float dy = ((float)y + 0.5f) - center.y;
           if ((dx * dx + dy * dy) <= radius_sq)
-            wpl_linux_x11_blend_pixel_at(window, x, y, color);
+            wpl_linux_x11_blend_pixel_unchecked(window, x, y, color);
         }
     }
 }
 
 static void
 wpl_linux_x11_render_glyph(WplWindow* window,
-                          int x,
-                          int y,
-                          unsigned char c,
-                          WplColor color)
+                           int x,
+                           int y,
+                           unsigned char c,
+                           WplColor color)
 {
   const uint8_t* glyph;
   int row;
