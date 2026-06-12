@@ -226,6 +226,20 @@ wpl_linux_x11_clip_bounds_to_active(const WplWindow* window,
   return *x0 < *x1 && *y0 < *y1;
 }
 
+static bool
+wpl_linux_x11_bounds_intersect_active_clip(const WplWindow* window,
+                                           int x0,
+                                           int y0,
+                                           int x1,
+                                           int y1)
+{
+  if (window == NULL)
+    return false;
+
+  return x0 < window->active_clip.x1 && x1 > window->active_clip.x0
+         && y0 < window->active_clip.y1 && y1 > window->active_clip.y0;
+}
+
 static WplLinuxX11RenderClip
 wpl_linux_x11_rect_to_clip(WplWindow* window, WplRect rect)
 {
@@ -899,10 +913,21 @@ wpl_linux_x11_render_glyph(WplWindow* window,
                            WplColor color)
 {
   const uint8_t* glyph;
+  int glyph_x1;
+  int glyph_y1;
   int row;
   int col;
 
   if (window == NULL || window->framebuffer == NULL)
+    return;
+
+  glyph_x1 = x + WPL_LINUX_X11_FONT_GLYPH_WIDTH;
+  glyph_y1 = y + WPL_LINUX_X11_FONT_GLYPH_HEIGHT;
+  if (!wpl_linux_x11_bounds_intersect_active_clip(window,
+                                                  x,
+                                                  y,
+                                                  glyph_x1,
+                                                  glyph_y1))
     return;
 
   glyph = wpl_linux_x11_font5x7_glyph(c);
