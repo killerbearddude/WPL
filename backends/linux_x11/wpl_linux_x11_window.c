@@ -432,9 +432,11 @@ wpl_pump_events(WplWindow* window)
           break;
 
         case EnterNotify:
+          wpl_linux_x11_handle_enter(window, &event.xcrossing);
           break;
 
         case LeaveNotify:
+          wpl_linux_x11_handle_leave(window, &event.xcrossing);
           break;
 
         default:
