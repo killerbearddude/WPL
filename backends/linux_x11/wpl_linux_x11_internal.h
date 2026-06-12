@@ -45,6 +45,7 @@ struct WplWindow {
   bool has_focus;
 
   WplInputState input;
+  bool mouse_position_initialized;
 
   double last_time;
   float delta_time;
