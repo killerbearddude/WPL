@@ -52,6 +52,14 @@ test_line_derived_geometry_must_be_finite(void)
   assert(wpl_draw_list_count(list) == 0u);
 
   assert(wpl_draw_line(list,
+                       wpl_test_vec2(0.0f, 0.0f),
+                       wpl_test_vec2(0.0f, 0.0f),
+                       wpl_test_color(),
+                       FLT_MAX)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_line(list,
                        wpl_test_vec2(-FLT_MAX, 0.0f),
                        wpl_test_vec2(-FLT_MAX, 0.0f),
                        wpl_test_color(),
@@ -99,6 +107,15 @@ test_dashed_line_derived_geometry_must_be_finite(void)
                               wpl_test_vec2(1.0e20f, 0.0f),
                               wpl_test_color(),
                               1.0f,
+                              pattern)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_dashed_line(list,
+                              wpl_test_vec2(0.0f, 0.0f),
+                              wpl_test_vec2(0.0f, 0.0f),
+                              wpl_test_color(),
+                              FLT_MAX,
                               pattern)
          == WPL_RESULT_INVALID_ARGUMENT);
   assert(wpl_draw_list_count(list) == 0u);
