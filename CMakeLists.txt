@@ -77,6 +77,12 @@ set_source_files_properties(
     COMPILE_DEFINITIONS WPL_LINUX_X11_RENAME_PUBLIC_SYMBOLS
 )
 
+set_source_files_properties(
+  backends/linux_x11/wpl_linux_x11_renderer.c
+  PROPERTIES
+    COMPILE_DEFINITIONS WPL_LINUX_X11_RENAME_RENDERER_PUBLIC_SYMBOLS
+)
+
 target_include_directories(wpl_linux_x11
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include

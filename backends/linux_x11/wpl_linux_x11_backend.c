@@ -16,7 +16,7 @@ static const WplBackendVTable wpl_linux_x11_vtable = {
   wpl_linux_x11_window_width,
   wpl_linux_x11_window_height,
   wpl_linux_x11_window_delta_time,
-  wpl_submit_draw_list
+  wpl_linux_x11_submit_draw_list
 };
 
 const WplBackendVTable*
@@ -174,4 +174,15 @@ wpl_window_delta_time(const WplWindow* window)
     return 0.0f;
 
   return backend->window_delta_time(window);
+}
+
+WplResult
+wpl_submit_draw_list(WplWindow* window, const WplDrawList* list)
+{
+  const WplBackendVTable* backend = wpl_default_backend();
+
+  if (backend == NULL || backend->submit_draw_list == NULL)
+    return WPL_RESULT_PLATFORM_ERROR;
+
+  return backend->submit_draw_list(window, list);
 }
