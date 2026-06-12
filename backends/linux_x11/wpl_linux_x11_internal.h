@@ -17,10 +17,11 @@
 #include <X11/Xutil.h>
 #include <X11/XKBlib.h>
 
-#include "wpl_backend_internal.h"
 #include "wpl/wpl_input.h"
 #include "wpl/wpl_result.h"
 #include "wpl/wpl_window.h"
+
+typedef struct WplBackendVTable WplBackendVTable;
 
 typedef struct WplLinuxX11RenderClip {
   int x0;

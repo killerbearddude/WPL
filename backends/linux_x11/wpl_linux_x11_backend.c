@@ -1,5 +1,6 @@
 /* wpl_linux_x11_backend.c - Linux/X11 private backend vtable. */
 
+#include "wpl_backend_internal.h"
 #include "wpl_linux_x11_internal.h"
 
 #include "wpl/wpl_time.h"
