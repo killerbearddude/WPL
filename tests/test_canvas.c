@@ -306,6 +306,25 @@ test_rect_intersection_helpers(void)
   wpl_test_assert_rect_near(c, (WplRect){0.0f, 0.0f, 0.0f, 0.0f});
 }
 
+static void
+test_rect_helpers_reject_overflowed_edges(void)
+{
+  WplRect normal = {0.0f, 0.0f, 10.0f, 10.0f};
+  WplRect overflow_x = {FLT_MAX, 0.0f, FLT_MAX, 1.0f};
+  WplRect overflow_y = {0.0f, FLT_MAX, 1.0f, FLT_MAX};
+  WplRect c;
+
+  assert(!wpl_rect_contains_point(overflow_x, wpl_test_vec2(FLT_MAX, 0.5f)));
+  assert(!wpl_rect_intersects(overflow_x, normal));
+  c = wpl_rect_intersection(overflow_x, normal);
+  wpl_test_assert_rect_near(c, (WplRect){0.0f, 0.0f, 0.0f, 0.0f});
+
+  assert(!wpl_rect_contains_point(overflow_y, wpl_test_vec2(0.5f, FLT_MAX)));
+  assert(!wpl_rect_intersects(overflow_y, normal));
+  c = wpl_rect_intersection(overflow_y, normal);
+  wpl_test_assert_rect_near(c, (WplRect){0.0f, 0.0f, 0.0f, 0.0f});
+}
+
 int
 main(void)
 {
@@ -324,5 +343,6 @@ main(void)
   test_invalid_zoom_factor_rejected();
   test_rect_contains_point();
   test_rect_intersection_helpers();
+  test_rect_helpers_reject_overflowed_edges();
   return 0;
 }

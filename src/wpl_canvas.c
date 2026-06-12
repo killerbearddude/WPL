@@ -27,6 +27,42 @@ wpl_rect_is_finite(WplRect rect)
 }
 
 static bool
+wpl_rect_get_edges(WplRect rect,
+                   float* out_x0,
+                   float* out_y0,
+                   float* out_x1,
+                   float* out_y1)
+{
+  float x1;
+  float y1;
+
+  if (out_x0 == NULL || out_y0 == NULL || out_x1 == NULL || out_y1 == NULL)
+    return false;
+
+  *out_x0 = 0.0f;
+  *out_y0 = 0.0f;
+  *out_x1 = 0.0f;
+  *out_y1 = 0.0f;
+
+  if (!wpl_rect_is_finite(rect))
+    return false;
+
+  if (rect.w < 0.0f || rect.h < 0.0f)
+    return false;
+
+  x1 = rect.x + rect.w;
+  y1 = rect.y + rect.h;
+  if (!wpl_float_is_finite(x1) || !wpl_float_is_finite(y1))
+    return false;
+
+  *out_x0 = rect.x;
+  *out_y0 = rect.y;
+  *out_x1 = x1;
+  *out_y1 = y1;
+  return true;
+}
+
+static bool
 wpl_canvas_view_is_valid(const WplCanvasView* view)
 {
   if (view == NULL)
@@ -182,49 +218,76 @@ wpl_canvas_zoom_around(WplCanvasView* view,
 bool
 wpl_rect_contains_point(WplRect rect, WplVec2 point)
 {
-  if (!wpl_rect_is_finite(rect) || !wpl_vec2_is_finite(point))
+  float x0;
+  float y0;
+  float x1;
+  float y1;
+
+  if (!wpl_vec2_is_finite(point))
     return false;
 
-  if (rect.w < 0.0f || rect.h < 0.0f)
+  if (!wpl_rect_get_edges(rect, &x0, &y0, &x1, &y1))
     return false;
 
-  return (point.x >= rect.x
-          && point.y >= rect.y
-          && point.x < rect.x + rect.w
-          && point.y < rect.y + rect.h);
+  return (point.x >= x0
+          && point.y >= y0
+          && point.x < x1
+          && point.y < y1);
 }
 
 bool
 wpl_rect_intersects(WplRect a, WplRect b)
 {
-  if (!wpl_rect_is_finite(a) || !wpl_rect_is_finite(b))
+  float ax0;
+  float ay0;
+  float ax1;
+  float ay1;
+  float bx0;
+  float by0;
+  float bx1;
+  float by1;
+
+  if (!wpl_rect_get_edges(a, &ax0, &ay0, &ax1, &ay1)
+      || !wpl_rect_get_edges(b, &bx0, &by0, &bx1, &by1))
     return false;
 
-  if (a.w <= 0.0f || a.h <= 0.0f || b.w <= 0.0f || b.h <= 0.0f)
+  if (ax0 >= ax1 || ay0 >= ay1 || bx0 >= bx1 || by0 >= by1)
     return false;
 
-  return (a.x < b.x + b.w
-          && a.x + a.w > b.x
-          && a.y < b.y + b.h
-          && a.y + a.h > b.y);
+  return (ax0 < bx1
+          && ax1 > bx0
+          && ay0 < by1
+          && ay1 > by0);
 }
 
 WplRect
 wpl_rect_intersection(WplRect a, WplRect b)
 {
   WplRect zero = {0.0f, 0.0f, 0.0f, 0.0f};
+  float ax0;
+  float ay0;
+  float ax1;
+  float ay1;
+  float bx0;
+  float by0;
+  float bx1;
+  float by1;
   float x0;
   float y0;
   float x1;
   float y1;
 
-  if (!wpl_rect_intersects(a, b))
+  if (!wpl_rect_get_edges(a, &ax0, &ay0, &ax1, &ay1)
+      || !wpl_rect_get_edges(b, &bx0, &by0, &bx1, &by1))
     return zero;
 
-  x0 = wpl_max_float(a.x, b.x);
-  y0 = wpl_max_float(a.y, b.y);
-  x1 = wpl_min_float(a.x + a.w, b.x + b.w);
-  y1 = wpl_min_float(a.y + a.h, b.y + b.h);
+  if (ax0 >= ax1 || ay0 >= ay1 || bx0 >= bx1 || by0 >= by1)
+    return zero;
+
+  x0 = wpl_max_float(ax0, bx0);
+  y0 = wpl_max_float(ay0, by0);
+  x1 = wpl_min_float(ax1, bx1);
+  y1 = wpl_min_float(ay1, by1);
 
   if (x1 <= x0 || y1 <= y0)
     return zero;
