@@ -17,6 +17,7 @@
 #include <X11/Xutil.h>
 #include <X11/XKBlib.h>
 
+#include "wpl_backend_internal.h"
 #include "wpl/wpl_input.h"
 #include "wpl/wpl_result.h"
 #include "wpl/wpl_window.h"
@@ -64,6 +65,8 @@ struct WplWindow {
 
   bool xkb_detectable_auto_repeat_enabled;
 };
+
+const WplBackendVTable* wpl_linux_x11_backend(void);
 
 void wpl_linux_x11_reset_transient_input(WplWindow* window);
 void wpl_linux_x11_clear_input_down_state(WplWindow* window);
