@@ -108,6 +108,17 @@ target_compile_options(wpl_test_draw_list PRIVATE
 )
 add_test(NAME wpl_test_draw_list COMMAND wpl_test_draw_list)
 
+add_executable(wpl_test_draw_derived_geometry
+  tests/test_draw_derived_geometry.c
+)
+target_link_libraries(wpl_test_draw_derived_geometry PRIVATE wpl_core)
+target_compile_options(wpl_test_draw_derived_geometry PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_draw_derived_geometry COMMAND wpl_test_draw_derived_geometry)
+
 add_executable(wpl_test_text_metrics
   tests/test_text_metrics.c
 )
