@@ -20,6 +20,22 @@ if(CMAKE_CXX_COMPILER)
   enable_language(CXX)
 endif()
 
+if(WPL_ENABLE_SANITIZERS)
+  if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    add_library(wpl_sanitizers INTERFACE)
+    target_compile_options(wpl_sanitizers INTERFACE
+      -fsanitize=address,undefined
+      -fno-omit-frame-pointer
+    )
+    target_link_options(wpl_sanitizers INTERFACE
+      -fsanitize=address,undefined
+      -fno-omit-frame-pointer
+    )
+  else()
+    message(FATAL_ERROR "WPL_ENABLE_SANITIZERS requires GCC or Clang")
+  endif()
+endif()
+
 add_library(wpl_core STATIC
   src/wpl_base.c
   src/wpl_time.c
@@ -41,6 +57,10 @@ target_link_libraries(wpl_core
     m
 )
 
+if(WPL_ENABLE_SANITIZERS)
+  target_link_libraries(wpl_core PUBLIC wpl_sanitizers)
+endif()
+
 find_package(X11 REQUIRED)
 
 add_library(wpl_linux_x11 STATIC
@@ -60,10 +80,15 @@ target_include_directories(wpl_linux_x11
 )
 
 target_link_libraries(wpl_linux_x11
-  PRIVATE
+  PUBLIC
     wpl_core
+  PRIVATE
     ${X11_LIBRARIES}
 )
+
+if(WPL_ENABLE_SANITIZERS)
+  target_link_libraries(wpl_linux_x11 PUBLIC wpl_sanitizers)
+endif()
 
 add_library(wpl INTERFACE)
 target_link_libraries(wpl INTERFACE wpl_linux_x11 wpl_core)
@@ -75,18 +100,6 @@ foreach(wpl_target IN ITEMS wpl_core wpl_linux_x11)
     -Wpedantic
   )
 endforeach()
-
-if(WPL_ENABLE_SANITIZERS)
-  if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    set(wpl_sanitizer_flags -fsanitize=address,undefined -fno-omit-frame-pointer)
-    foreach(wpl_target IN ITEMS wpl_core wpl_linux_x11)
-      target_compile_options(${wpl_target} PRIVATE ${wpl_sanitizer_flags})
-      target_link_options(${wpl_target} PRIVATE ${wpl_sanitizer_flags})
-    endforeach()
-  else()
-    message(FATAL_ERROR "WPL_ENABLE_SANITIZERS requires GCC or Clang")
-  endif()
-endif()
 
 add_subdirectory(examples/00_empty_window)
 add_subdirectory(examples/01_input_snapshot)
