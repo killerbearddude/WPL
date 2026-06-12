@@ -146,10 +146,18 @@ wpl_draw_dashed_line_segment_count_limited(WplVec2 a,
 static WplResult
 wpl_draw_validate_rect(WplRect rect)
 {
+  float x1;
+  float y1;
+
   if (!wpl_draw_rect_is_finite(rect))
     return WPL_RESULT_INVALID_ARGUMENT;
 
   if (rect.w < 0.0f || rect.h < 0.0f)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  x1 = rect.x + rect.w;
+  y1 = rect.y + rect.h;
+  if (!wpl_draw_float_is_finite(x1) || !wpl_draw_float_is_finite(y1))
     return WPL_RESULT_INVALID_ARGUMENT;
 
   return WPL_RESULT_OK;

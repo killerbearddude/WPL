@@ -3,6 +3,7 @@
 #include <wpl/wpl.h>
 
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 #include <stddef.h>
 #include <string.h>
@@ -253,6 +254,39 @@ test_nonfinite_values_are_rejected(void)
                        "text",
                        wpl_test_color())
          == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  wpl_destroy_draw_list(list);
+}
+
+static void
+test_rect_derived_edges_must_be_finite(void)
+{
+  WplDrawList* list = wpl_test_create_list(8u);
+  WplPanelStyle style = wpl_test_panel_style();
+  WplRect overflow_x = {FLT_MAX, 0.0f, FLT_MAX, 1.0f};
+  WplRect overflow_y = {0.0f, FLT_MAX, 1.0f, FLT_MAX};
+
+  assert(wpl_draw_rect(list, overflow_x, wpl_test_color())
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_rounded_rect(list, overflow_x, 1.0f, wpl_test_color())
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_panel(list, overflow_x, style)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_rect_outline(list, overflow_x, wpl_test_color(), 1.0f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_push_clip(list, overflow_x) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_list_count(list) == 0u);
+
+  assert(wpl_draw_rect(list, overflow_y, wpl_test_color())
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_rounded_rect(list, overflow_y, 1.0f, wpl_test_color())
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_panel(list, overflow_y, style)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_rect_outline(list, overflow_y, wpl_test_color(), 1.0f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_draw_push_clip(list, overflow_y) == WPL_RESULT_INVALID_ARGUMENT);
   assert(wpl_draw_list_count(list) == 0u);
 
   wpl_destroy_draw_list(list);
@@ -1069,6 +1103,7 @@ main(void)
   test_null_list_appends_are_invalid();
   test_invalid_geometry_preserves_count();
   test_nonfinite_values_are_rejected();
+  test_rect_derived_edges_must_be_finite();
   test_out_of_range_finite_color_is_accepted();
   test_text_validation();
   test_polyline_validation();
