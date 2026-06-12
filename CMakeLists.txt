@@ -10,6 +10,8 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
+option(WPL_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer." OFF)
+
 enable_testing()
 
 include(CheckLanguage)
@@ -73,6 +75,18 @@ foreach(wpl_target IN ITEMS wpl_core wpl_linux_x11)
     -Wpedantic
   )
 endforeach()
+
+if(WPL_ENABLE_SANITIZERS)
+  if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    set(wpl_sanitizer_flags -fsanitize=address,undefined -fno-omit-frame-pointer)
+    foreach(wpl_target IN ITEMS wpl_core wpl_linux_x11)
+      target_compile_options(${wpl_target} PRIVATE ${wpl_sanitizer_flags})
+      target_link_options(${wpl_target} PRIVATE ${wpl_sanitizer_flags})
+    endforeach()
+  else()
+    message(FATAL_ERROR "WPL_ENABLE_SANITIZERS requires GCC or Clang")
+  endif()
+endif()
 
 add_subdirectory(examples/00_empty_window)
 add_subdirectory(examples/01_input_snapshot)

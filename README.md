@@ -39,8 +39,9 @@ The repository currently includes:
 - Replay recorder/player
 - Input replay example
 - Ubuntu GCC/Clang CI workflow
+- Sanitizer and Xvfb smoke validation paths
 
-See `docs/release_checklist.md`, `docs/validation_report_v0.1.md`, `docs/release_notes_v0.1.md`, `docs/release_process.md`, `docs/validation.md`, and `docs/api_review.md` for the v0.1 readiness review, validation evidence, and release preparation notes.
+See `docs/release_checklist.md`, `docs/validation_report_v0.1.md`, `docs/release_notes_v0.1.md`, `docs/release_process.md`, `docs/validation.md`, `docs/lifecycle_threading.md`, and `docs/api_review.md` for the v0.1 readiness review, validation evidence, lifecycle/threading assumptions, and release preparation notes.
 
 ## Scope
 
@@ -85,6 +86,12 @@ On Ubuntu-like systems:
 sudo apt-get install build-essential cmake libx11-dev
 ```
 
+For headless X11 smoke validation, install:
+
+```sh
+sudo apt-get install xvfb
+```
+
 ## Build
 
 ```sh
@@ -105,11 +112,23 @@ ctest --test-dir build --output-on-failure
 ./scripts/check_no_backend_leaks.sh
 ```
 
+Sanitizer validation:
+
+```sh
+./scripts/build_sanitize.sh
+```
+
+Headless X11 smoke validation:
+
+```sh
+./scripts/xvfb_smoke.sh
+```
+
 ## Continuous Integration
 
-Pull requests and pushes to `main` are validated on Ubuntu with CMake, GCC, Clang, the X11 development headers, public-header smoke tests, backend-leak checks, and CTest.
+Pull requests and pushes to `main` and `development/linux-only-upgrade-plan` are validated on Ubuntu with CMake, GCC, Clang, the X11 development headers, public-header smoke tests, backend-leak checks, and CTest.
 
-CI builds the library, tests, and examples. It does not run graphical examples because they require a display server. Manual graphical validation is documented in `docs/validation.md`.
+CI builds the library, tests, and examples. It also runs sanitizer validation and a non-interactive Xvfb-backed window API smoke test. Interactive graphical example validation remains manual and is documented in `docs/validation.md`.
 
 ## Examples
 
@@ -156,6 +175,13 @@ narrow module header:
 Public headers are C-compatible and backend-clean. They do not expose X11 types,
 file descriptors, XImage ownership, renderer internals, or replay binary structs.
 
+## Lifecycle and threading
+
+WPL APIs are single-threaded unless a specific function documents otherwise.
+Callers must use one owner thread or provide external synchronization around all
+WPL access. Frame lifecycle and threading assumptions are documented in
+`docs/lifecycle_threading.md`.
+
 ## Backend isolation rule
 
 Only `backends/linux_x11/` may include X11 headers or use X11 types. Core source
@@ -177,7 +203,7 @@ APIs.
 - X11 renderer supports common TrueColor visuals with RGB masks
   `0x00ff0000`, `0x0000ff00`, and `0x000000ff`.
 - Graphical examples require X11/XWayland.
-- CI builds graphical examples but does not run them.
+- Interactive graphical example validation remains manual.
 
 ## Post-v0.1 Roadmap
 

@@ -1,7 +1,8 @@
-# WPL v0.1 Validation
+# WPL Validation
 
-This document defines the validation evidence required before treating the WPL
-v0.1 candidate as a final release candidate. Recorded v0.1 evidence lives in `docs/validation_report_v0.1.md`.
+This document defines the validation evidence required before treating WPL changes
+as ready to merge.  Recorded v0.1 release evidence lives in
+`docs/validation_report_v0.1.md`.
 
 ## Automated Validation
 
@@ -19,9 +20,15 @@ CI requirements:
 
 - Ubuntu GCC job must pass.
 - Ubuntu Clang job must pass.
+- Ubuntu sanitizer job must pass.
+- Ubuntu Xvfb smoke job must pass when the patch targets a branch that enables it.
 - CI must run on pull requests targeting `main`.
-- CI must run on pushes to `main`.
-- CI builds graphical examples but does not execute them.
+- CI must run on pull requests targeting `development/linux-only-upgrade-plan`.
+- CI must run on pushes to `main` and `development/linux-only-upgrade-plan`.
+- CI builds graphical examples.
+- Headless CI may run non-interactive X11 smoke tests under Xvfb.
+- Interactive graphical examples still require manual validation on a real X11 or
+  XWayland desktop session.
 
 Optional local Clang validation when Clang is installed:
 
@@ -31,6 +38,61 @@ cmake --build build-clang --parallel
 ctest --test-dir build-clang --output-on-failure
 ./scripts/check_public_headers.sh build-clang
 ```
+
+## Sanitizer Validation
+
+Phase 0 adds an explicit sanitizer validation path for core and backend targets.
+It enables AddressSanitizer and UndefinedBehaviorSanitizer for GCC or Clang.
+
+Run:
+
+```sh
+./scripts/build_sanitize.sh
+```
+
+Equivalent CMake invocation:
+
+```sh
+cmake -S . -B build-sanitize \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DWPL_ENABLE_SANITIZERS=ON
+cmake --build build-sanitize --parallel
+ctest --test-dir build-sanitize --output-on-failure
+```
+
+Sanitizer failures must be treated as release-blocking unless the PR documents a
+specific tool limitation and a follow-up plan.
+
+## Xvfb Smoke Validation
+
+Phase 0 adds a non-interactive X11 smoke path for CI and local headless Linux
+environments.  It does not replace manual graphical validation.
+
+Run:
+
+```sh
+./scripts/xvfb_smoke.sh
+```
+
+The script builds WPL in `build-xvfb` and runs the backend window API smoke test
+under `xvfb-run`.  This validates create/pump/render/destroy coverage in a
+headless X11 server without adding new platform scope.
+
+## Lifecycle and Threading Contract
+
+Lifecycle and threading assumptions are part of validation.  See:
+
+- `docs/lifecycle_threading.md`
+
+Relevant checks for reviewers:
+
+- public headers still expose only portable C types and opaque handles,
+- backend-native handles remain private,
+- frame lifecycle order remains documented,
+- transient input reset stays at `wpl_begin_frame`,
+- event pumping accumulates into the current frame snapshot,
+- WPL APIs remain single-threaded unless explicitly documented otherwise,
+- patches do not add hidden background work or unsynchronized shared state.
 
 ## Manual Graphical Validation
 
@@ -114,9 +176,6 @@ Manual validation should record the environment used:
 - Window manager or desktop environment.
 - Compiler used for the local build.
 
-Graphical validation is intentionally not run in CI because CI does not provide a
-stable interactive display server for these examples.
-
 ## XKB Auto-Repeat Validation
 
 Run:
@@ -146,7 +205,7 @@ If the example prints only transitions, the expected behavior is:
 ## Fallback Repeat-Release Validation
 
 The fallback repeat-release path is used when XKB detectable auto-repeat is
-unavailable or disabled. Default CI does not cover this path.
+unavailable or disabled.  Default CI does not cover this path.
 
 Current validation status:
 
@@ -165,12 +224,16 @@ Possible future closure:
 
 ## Release Evidence Checklist
 
-Before final v0.1 PASS:
+Before final PASS:
 
-- [ ] Ubuntu GCC CI passes on latest `main`.
-- [ ] Ubuntu Clang CI passes on latest `main`.
+- [ ] Ubuntu GCC CI passes.
+- [ ] Ubuntu Clang CI passes.
+- [ ] Ubuntu sanitizer CI passes.
+- [ ] Ubuntu Xvfb smoke CI passes where enabled.
 - [ ] Local default compiler build and tests pass.
 - [ ] Optional local Clang build and tests pass, or limitation is documented.
+- [ ] Sanitizer build and tests pass, or limitation is documented.
+- [ ] Xvfb smoke validation passes, or limitation is documented.
 - [ ] Manual graphical smoke validation is completed on X11/XWayland.
 - [ ] XKB detectable auto-repeat behavior is manually validated.
 - [ ] Fallback repeat-release path is validated or accepted as deferred risk.

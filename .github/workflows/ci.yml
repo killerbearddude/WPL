@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - development/linux-only-upgrade-plan
   pull_request:
     branches:
       - main
+      - development/linux-only-upgrade-plan
 
 jobs:
   ubuntu-gcc:
@@ -71,3 +73,42 @@ jobs:
 
       - name: Check backend leaks
         run: ./scripts/check_no_backend_leaks.sh
+
+  ubuntu-sanitizers:
+    name: Ubuntu Sanitizers
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            libx11-dev
+
+      - name: Build and test with ASan/UBSan
+        run: ./scripts/build_sanitize.sh
+
+  ubuntu-xvfb-smoke:
+    name: Ubuntu Xvfb Smoke
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            libx11-dev \
+            xvfb
+
+      - name: Run headless X11 smoke test
+        run: ./scripts/xvfb_smoke.sh
