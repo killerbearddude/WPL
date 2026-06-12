@@ -10,12 +10,30 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
+option(WPL_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer." OFF)
+
 enable_testing()
 
 include(CheckLanguage)
 check_language(CXX)
 if(CMAKE_CXX_COMPILER)
   enable_language(CXX)
+endif()
+
+if(WPL_ENABLE_SANITIZERS)
+  if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    add_library(wpl_sanitizers INTERFACE)
+    target_compile_options(wpl_sanitizers INTERFACE
+      -fsanitize=address,undefined
+      -fno-omit-frame-pointer
+    )
+    target_link_options(wpl_sanitizers INTERFACE
+      -fsanitize=address,undefined
+      -fno-omit-frame-pointer
+    )
+  else()
+    message(FATAL_ERROR "WPL_ENABLE_SANITIZERS requires GCC or Clang")
+  endif()
 endif()
 
 add_library(wpl_core STATIC
@@ -39,6 +57,10 @@ target_link_libraries(wpl_core
     m
 )
 
+if(WPL_ENABLE_SANITIZERS)
+  target_link_libraries(wpl_core PUBLIC wpl_sanitizers)
+endif()
+
 find_package(X11 REQUIRED)
 
 add_library(wpl_linux_x11 STATIC
@@ -58,10 +80,15 @@ target_include_directories(wpl_linux_x11
 )
 
 target_link_libraries(wpl_linux_x11
-  PRIVATE
+  PUBLIC
     wpl_core
+  PRIVATE
     ${X11_LIBRARIES}
 )
+
+if(WPL_ENABLE_SANITIZERS)
+  target_link_libraries(wpl_linux_x11 PUBLIC wpl_sanitizers)
+endif()
 
 add_library(wpl INTERFACE)
 target_link_libraries(wpl INTERFACE wpl_linux_x11 wpl_core)
