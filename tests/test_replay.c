@@ -123,6 +123,23 @@ wpl_test_write_valid_replay_file(const char* path, const WplReplayFrameV1* frame
 }
 
 static void
+wpl_test_write_two_frame_replay_file(const char* path,
+                                     const WplReplayFrameV1 frames[2])
+{
+  uint8_t bytes[WPL_REPLAY_HEADER_SIZE_V1 + (2u * WPL_REPLAY_FRAME_SIZE_V1)];
+
+  assert(wpl_replay_encode_header_v1(2u, bytes) == WPL_RESULT_OK);
+  assert(wpl_replay_encode_frame_v1(&frames[0],
+                                    bytes + WPL_REPLAY_HEADER_SIZE_V1)
+         == WPL_RESULT_OK);
+  assert(wpl_replay_encode_frame_v1(
+           &frames[1],
+           bytes + WPL_REPLAY_HEADER_SIZE_V1 + WPL_REPLAY_FRAME_SIZE_V1)
+         == WPL_RESULT_OK);
+  assert(wpl_write_entire_file(path, bytes, sizeof(bytes)) == WPL_RESULT_OK);
+}
+
+static void
 wpl_test_write_zero_frame_replay_file(const char* path)
 {
   uint8_t bytes[WPL_REPLAY_HEADER_SIZE_V1];
@@ -433,6 +450,55 @@ test_player_load_one_frame_and_next(void)
 }
 
 static void
+test_player_load_rejects_bad_frame_sequence_and_preserves_previous_replay(void)
+{
+  WplReplayPlayer* player = NULL;
+  WplReplayFrameV1 valid_frame;
+  WplReplayFrameV1 frames[2];
+  WplInputState input;
+  float delta = 0.0f;
+  bool has_frame = false;
+  char valid_path[64];
+  char bad_path[64];
+
+  memset(&valid_frame, 0, sizeof(valid_frame));
+  valid_frame.frame_index = 0u;
+  valid_frame.delta_microseconds = 12000u;
+  valid_frame.time_microseconds = 12000u;
+  valid_frame.input = wpl_test_input(3u);
+
+  assert(wpl_test_make_temp_path(valid_path));
+  assert(wpl_test_make_temp_path(bad_path));
+  wpl_test_write_valid_replay_file(valid_path, &valid_frame);
+  assert(wpl_replay_player_create(&player) == WPL_RESULT_OK);
+  assert(wpl_replay_player_load(player, valid_path) == WPL_RESULT_OK);
+
+  frames[0] = valid_frame;
+  frames[1] = valid_frame;
+  frames[1].frame_index = 2u;
+  frames[1].delta_microseconds = 4000u;
+  frames[1].time_microseconds = 16000u;
+  frames[1].input = wpl_test_input(4u);
+  wpl_test_write_two_frame_replay_file(bad_path, frames);
+  assert(wpl_replay_player_load(player, bad_path) == WPL_RESULT_PARSE_ERROR);
+
+  frames[1].frame_index = 1u;
+  frames[1].time_microseconds = 17000u;
+  wpl_test_write_two_frame_replay_file(bad_path, frames);
+  assert(wpl_replay_player_load(player, bad_path) == WPL_RESULT_PARSE_ERROR);
+
+  assert(wpl_replay_player_next(player, &input, &delta, &has_frame)
+         == WPL_RESULT_OK);
+  assert(has_frame);
+  assert(wpl_test_float_equal(delta, 0.012f));
+  wpl_test_assert_input_equal(input, valid_frame.input);
+
+  unlink(valid_path);
+  unlink(bad_path);
+  wpl_replay_player_destroy(player);
+}
+
+static void
 test_roundtrip_two_frames(void)
 {
   WplReplayRecorder* recorder = NULL;
@@ -548,6 +614,7 @@ main(void)
   test_player_create_destroy_and_next_validation();
   test_player_load_validation_and_zero_frame();
   test_player_load_one_frame_and_next();
+  test_player_load_rejects_bad_frame_sequence_and_preserves_previous_replay();
   test_roundtrip_two_frames();
   test_malformed_loads_and_preserves_previous_replay();
   test_malformed_load_results();
