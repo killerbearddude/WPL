@@ -176,6 +176,30 @@ wpl_linux_x11_key_from_keysym(KeySym keysym)
     }
 }
 
+static void
+wpl_linux_x11_update_mouse_position(WplWindow* window,
+                                    int x,
+                                    int y,
+                                    bool accumulate_delta)
+{
+  WplVec2 position;
+
+  if (window == NULL)
+    return;
+
+  position.x = (float)x;
+  position.y = (float)y;
+
+  if (window->mouse_position_initialized && accumulate_delta)
+    {
+      window->input.mouse.delta.x += position.x - window->input.mouse.position.x;
+      window->input.mouse.delta.y += position.y - window->input.mouse.position.y;
+    }
+
+  window->input.mouse.position = position;
+  window->mouse_position_initialized = true;
+}
+
 static bool
 wpl_linux_x11_is_synthetic_repeat_release(WplWindow* window,
                                           const XKeyEvent* event)
@@ -335,18 +359,10 @@ wpl_linux_x11_init_detectable_auto_repeat(WplWindow* window)
 void
 wpl_linux_x11_handle_motion(WplWindow* window, const XMotionEvent* event)
 {
-  WplVec2 position;
-
   if (window == NULL || event == NULL)
     return;
 
-  position.x = (float)event->x;
-  position.y = (float)event->y;
-
-  window->input.mouse.delta.x += position.x - window->input.mouse.position.x;
-  window->input.mouse.delta.y += position.y - window->input.mouse.position.y;
-  window->input.mouse.position = position;
-
+  wpl_linux_x11_update_mouse_position(window, event->x, event->y, true);
   wpl_linux_x11_apply_modifier_state(&window->input, event->state);
 }
 
@@ -359,6 +375,7 @@ wpl_linux_x11_handle_button_press(WplWindow* window,
   if (window == NULL || event == NULL)
     return;
 
+  wpl_linux_x11_update_mouse_position(window, event->x, event->y, false);
   wpl_linux_x11_apply_modifier_state(&window->input, event->state);
 
   if (event->button == Button4)
@@ -392,6 +409,7 @@ wpl_linux_x11_handle_button_release(WplWindow* window,
   if (window == NULL || event == NULL)
     return;
 
+  wpl_linux_x11_update_mouse_position(window, event->x, event->y, false);
   wpl_linux_x11_apply_modifier_state(&window->input, event->state);
 
   if (event->button == Button4 || event->button == Button5
