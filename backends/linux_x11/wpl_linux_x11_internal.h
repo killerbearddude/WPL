@@ -17,6 +17,7 @@
 #include <X11/Xutil.h>
 #include <X11/XKBlib.h>
 
+#include "wpl/wpl_draw.h"
 #include "wpl/wpl_input.h"
 #include "wpl/wpl_result.h"
 #include "wpl/wpl_window.h"
@@ -82,6 +83,8 @@ WplResult wpl_linux_x11_end_frame(WplWindow* window);
 int wpl_linux_x11_window_width(const WplWindow* window);
 int wpl_linux_x11_window_height(const WplWindow* window);
 float wpl_linux_x11_window_delta_time(const WplWindow* window);
+WplResult wpl_linux_x11_submit_draw_list(WplWindow* window,
+                                         const WplDrawList* list);
 
 void wpl_linux_x11_reset_transient_input(WplWindow* window);
 void wpl_linux_x11_clear_input_down_state(WplWindow* window);
@@ -126,6 +129,10 @@ WplResult wpl_linux_x11_present_frame(WplWindow* window);
 #define wpl_window_width wpl_linux_x11_window_width
 #define wpl_window_height wpl_linux_x11_window_height
 #define wpl_window_delta_time wpl_linux_x11_window_delta_time
+#endif
+
+#if defined(WPL_LINUX_X11_RENAME_RENDERER_PUBLIC_SYMBOLS)
+#define wpl_submit_draw_list wpl_linux_x11_submit_draw_list
 #endif
 
 #endif /* WPL_LINUX_X11_INTERNAL_H */

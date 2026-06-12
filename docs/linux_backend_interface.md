@@ -48,12 +48,16 @@ This phase does not add:
 `src/wpl_backend_internal.h` defines the private `WplBackendVTable`.
 `backends/linux_x11/wpl_linux_x11_backend.c` owns the current default backend
 selection and the public dispatch wrappers for window lifecycle, cursor,
-frame-boundary, window dimension, and frame-delta APIs.
+frame-boundary, window dimension, frame-delta, and draw-list submission APIs.
 
-`backends/linux_x11/wpl_linux_x11_window.c` still contains the X11 implementation,
-but its public symbol names are compiled as `wpl_linux_x11_*` backend-private
-symbols before they are registered in the backend table.
+`backends/linux_x11/wpl_linux_x11_window.c` still contains the X11 window
+implementation, but its public symbol names are compiled as `wpl_linux_x11_*`
+backend-private symbols before they are registered in the backend table.
 
-Draw-list submission is still implemented directly by the X11 renderer and is
-registered in the backend table for the next slice.  A later patch should move
-that public entry point through the same dispatch path.
+`backends/linux_x11/wpl_linux_x11_renderer.c` still contains the X11 software
+renderer implementation, but `wpl_submit_draw_list` is compiled as
+`wpl_linux_x11_submit_draw_list` before it is registered in the backend table.
+
+Presentation remains backend-private through `wpl_linux_x11_present_frame`, which
+is consumed by the X11 frame-end implementation.  No runtime backend selection or
+second backend exists yet.

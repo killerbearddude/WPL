@@ -1,5 +1,6 @@
 /* test_backend_dispatch.c - Public backend-dispatch fallback smoke coverage. */
 
+#include "wpl/wpl_draw.h"
 #include "wpl/wpl_result.h"
 #include "wpl/wpl_time.h"
 #include "wpl/wpl_window.h"
@@ -31,6 +32,8 @@ main(void)
   assert(wpl_window_width(NULL) == 0);
   assert(wpl_window_height(NULL) == 0);
   assert(wpl_window_delta_time(NULL) == 0.0f);
+
+  assert(wpl_submit_draw_list(NULL, NULL) == WPL_RESULT_INVALID_ARGUMENT);
 
   return 0;
 }
