@@ -3,6 +3,7 @@
 #include <wpl/wpl.h>
 
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 #include <stdbool.h>
 
@@ -47,6 +48,15 @@ wpl_test_assert_rect_near(WplRect actual, WplRect expected)
   assert(wpl_test_nearly_equal(actual.y, expected.y));
   assert(wpl_test_nearly_equal(actual.w, expected.w));
   assert(wpl_test_nearly_equal(actual.h, expected.h));
+}
+
+static void
+wpl_test_assert_view_near(WplCanvasView actual, WplCanvasView expected)
+{
+  wpl_test_assert_vec2_near(actual.pan, expected.pan);
+  assert(wpl_test_nearly_equal(actual.zoom, expected.zoom));
+  assert(wpl_test_nearly_equal(actual.min_zoom, expected.min_zoom));
+  assert(wpl_test_nearly_equal(actual.max_zoom, expected.max_zoom));
 }
 
 static void
@@ -178,6 +188,17 @@ test_zoom_around_clamps_to_min_and_max(void)
 }
 
 static void
+test_zoom_around_failure_preserves_view(void)
+{
+  WplCanvasView view = {{0.0f, 0.0f}, 1.0f, 1.0f, FLT_MAX};
+  WplCanvasView before = view;
+
+  assert(wpl_canvas_zoom_around(&view, wpl_test_vec2(FLT_MAX, 0.0f), FLT_MAX)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  wpl_test_assert_view_near(view, before);
+}
+
+static void
 test_invalid_view_and_output_rejected(void)
 {
   WplCanvasView view = wpl_test_view(0.0f, 0.0f, 1.0f);
@@ -297,6 +318,7 @@ main(void)
   test_pan_by_updates_screen_space_pan();
   test_zoom_around_cursor_anchor();
   test_zoom_around_clamps_to_min_and_max();
+  test_zoom_around_failure_preserves_view();
   test_invalid_view_and_output_rejected();
   test_nonfinite_inputs_rejected();
   test_invalid_zoom_factor_rejected();
