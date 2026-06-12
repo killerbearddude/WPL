@@ -263,6 +263,76 @@ test_wheel_button_updates_position_and_wheel_without_delta(void)
   assert(window.input.mouse.wheel_delta == 1.0f);
 }
 
+static void
+test_enter_initializes_position_without_delta(void)
+{
+  WplWindow window = {0};
+  XCrossingEvent event = {0};
+
+  event.x = 70;
+  event.y = 90;
+  event.state = ShiftMask | ControlMask;
+
+  wpl_linux_x11_handle_enter(&window, &event);
+
+  assert(window.mouse_position_initialized == true);
+  assert(window.input.mouse.position.x == 70.0f);
+  assert(window.input.mouse.position.y == 90.0f);
+  assert(window.input.mouse.delta.x == 0.0f);
+  assert(window.input.mouse.delta.y == 0.0f);
+  assert(window.input.keyboard.shift_down == true);
+  assert(window.input.keyboard.ctrl_down == true);
+  assert(window.input.keyboard.alt_down == false);
+}
+
+static void
+test_leave_reenter_suppresses_artificial_delta(void)
+{
+  WplWindow window = {0};
+  XMotionEvent motion = {0};
+  XCrossingEvent crossing = {0};
+
+  motion.x = 10;
+  motion.y = 20;
+  wpl_linux_x11_handle_motion(&window, &motion);
+
+  motion.x = 15;
+  motion.y = 25;
+  wpl_linux_x11_handle_motion(&window, &motion);
+  assert(window.input.mouse.delta.x == 5.0f);
+  assert(window.input.mouse.delta.y == 5.0f);
+
+  wpl_linux_x11_input_reset_transients(&window.input);
+
+  crossing.x = 16;
+  crossing.y = 26;
+  crossing.state = Mod1Mask;
+  wpl_linux_x11_handle_leave(&window, &crossing);
+  assert(window.mouse_position_initialized == false);
+  assert(window.input.keyboard.shift_down == false);
+  assert(window.input.keyboard.ctrl_down == false);
+  assert(window.input.keyboard.alt_down == true);
+
+  crossing.x = 100;
+  crossing.y = 120;
+  crossing.state = 0u;
+  wpl_linux_x11_handle_enter(&window, &crossing);
+  assert(window.mouse_position_initialized == true);
+  assert(window.input.mouse.position.x == 100.0f);
+  assert(window.input.mouse.position.y == 120.0f);
+  assert(window.input.mouse.delta.x == 0.0f);
+  assert(window.input.mouse.delta.y == 0.0f);
+  assert(window.input.keyboard.alt_down == false);
+
+  motion.x = 103;
+  motion.y = 118;
+  wpl_linux_x11_handle_motion(&window, &motion);
+  assert(window.input.mouse.position.x == 103.0f);
+  assert(window.input.mouse.position.y == 118.0f);
+  assert(window.input.mouse.delta.x == 3.0f);
+  assert(window.input.mouse.delta.y == -2.0f);
+}
+
 int
 main(void)
 {
@@ -278,5 +348,7 @@ main(void)
   test_subsequent_motion_accumulates_delta();
   test_button_events_update_position_without_delta();
   test_wheel_button_updates_position_and_wheel_without_delta();
+  test_enter_initializes_position_without_delta();
+  test_leave_reenter_suppresses_artificial_delta();
   return 0;
 }
