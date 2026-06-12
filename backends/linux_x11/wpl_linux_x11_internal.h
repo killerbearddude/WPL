@@ -21,6 +21,8 @@
 #include "wpl/wpl_result.h"
 #include "wpl/wpl_window.h"
 
+typedef struct WplBackendVTable WplBackendVTable;
+
 typedef struct WplLinuxX11RenderClip {
   int x0;
   int y0;
@@ -64,6 +66,8 @@ struct WplWindow {
 
   bool xkb_detectable_auto_repeat_enabled;
 };
+
+const WplBackendVTable* wpl_linux_x11_backend(void);
 
 void wpl_linux_x11_reset_transient_input(WplWindow* window);
 void wpl_linux_x11_clear_input_down_state(WplWindow* window);

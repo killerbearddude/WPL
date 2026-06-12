@@ -64,6 +64,7 @@ endif()
 find_package(X11 REQUIRED)
 
 add_library(wpl_linux_x11 STATIC
+  backends/linux_x11/wpl_linux_x11_backend.c
   backends/linux_x11/wpl_linux_x11_window.c
   backends/linux_x11/wpl_linux_x11_input.c
   backends/linux_x11/wpl_linux_x11_renderer.c
@@ -242,6 +243,23 @@ target_compile_options(wpl_test_public_headers PRIVATE
   -Wpedantic
 )
 add_test(NAME wpl_test_public_headers COMMAND wpl_test_public_headers)
+
+add_executable(wpl_test_backend_interface
+  tests/test_backend_interface.c
+)
+target_include_directories(wpl_test_backend_interface
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/backends/linux_x11
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${X11_INCLUDE_DIR}
+)
+target_link_libraries(wpl_test_backend_interface PRIVATE wpl)
+target_compile_options(wpl_test_backend_interface PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_backend_interface COMMAND wpl_test_backend_interface)
 
 add_executable(wpl_test_window_api
   tests/test_window_api.c
