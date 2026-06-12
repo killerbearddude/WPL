@@ -188,6 +188,116 @@ wpl_draw_validate_radius(float radius)
 }
 
 static WplResult
+wpl_draw_validate_line_geometry(WplVec2 a, WplVec2 b, float thickness)
+{
+  float dx;
+  float dy;
+  float length_sq;
+  float radius;
+  float min_x;
+  float max_x;
+  float min_y;
+  float max_y;
+  float bound_x0;
+  float bound_x1;
+  float bound_y0;
+  float bound_y1;
+  WplResult result;
+
+  if (!wpl_draw_vec2_is_finite(a) || !wpl_draw_vec2_is_finite(b))
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  result = wpl_draw_validate_thickness(thickness);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  dx = b.x - a.x;
+  dy = b.y - a.y;
+  if (!wpl_draw_float_is_finite(dx) || !wpl_draw_float_is_finite(dy))
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  length_sq = dx * dx + dy * dy;
+  if (!wpl_draw_float_is_finite(length_sq))
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  radius = thickness * 0.5f;
+  if (!wpl_draw_float_is_finite(radius))
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  min_x = a.x < b.x ? a.x : b.x;
+  max_x = a.x > b.x ? a.x : b.x;
+  min_y = a.y < b.y ? a.y : b.y;
+  max_y = a.y > b.y ? a.y : b.y;
+
+  bound_x0 = min_x - radius;
+  bound_x1 = max_x + radius;
+  bound_y0 = min_y - radius;
+  bound_y1 = max_y + radius;
+  if (!wpl_draw_float_is_finite(bound_x0)
+      || !wpl_draw_float_is_finite(bound_x1)
+      || !wpl_draw_float_is_finite(bound_y0)
+      || !wpl_draw_float_is_finite(bound_y1))
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  return WPL_RESULT_OK;
+}
+
+static WplResult
+wpl_draw_validate_polyline_geometry(const WplVec2* points,
+                                    size_t point_count,
+                                    float thickness)
+{
+  size_t i;
+  WplResult result;
+
+  if (points == NULL || point_count < 2u)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  for (i = 0u; i + 1u < point_count; i++)
+    {
+      result = wpl_draw_validate_line_geometry(points[i],
+                                               points[i + 1u],
+                                               thickness);
+      if (result != WPL_RESULT_OK)
+        return result;
+    }
+
+  return WPL_RESULT_OK;
+}
+
+static WplResult
+wpl_draw_validate_circle_geometry(WplVec2 center, float radius)
+{
+  float radius_sq;
+  float x0;
+  float x1;
+  float y0;
+  float y1;
+  WplResult result;
+
+  if (!wpl_draw_vec2_is_finite(center))
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  result = wpl_draw_validate_radius(radius);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  radius_sq = radius * radius;
+  if (!wpl_draw_float_is_finite(radius_sq))
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  x0 = center.x - radius;
+  x1 = center.x + radius;
+  y0 = center.y - radius;
+  y1 = center.y + radius;
+  if (!wpl_draw_float_is_finite(x0) || !wpl_draw_float_is_finite(x1)
+      || !wpl_draw_float_is_finite(y0) || !wpl_draw_float_is_finite(y1))
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  return WPL_RESULT_OK;
+}
+
+static WplResult
 wpl_draw_append_command(WplDrawList* list, const WplDrawCommand* command)
 {
   if (list == NULL || command == NULL)
@@ -608,14 +718,11 @@ wpl_draw_line(WplDrawList* list,
   if (list == NULL)
     return WPL_RESULT_INVALID_ARGUMENT;
 
-  if (!wpl_draw_vec2_is_finite(a) || !wpl_draw_vec2_is_finite(b))
-    return WPL_RESULT_INVALID_ARGUMENT;
-
-  result = wpl_draw_validate_color(color);
+  result = wpl_draw_validate_line_geometry(a, b, thickness);
   if (result != WPL_RESULT_OK)
     return result;
 
-  result = wpl_draw_validate_thickness(thickness);
+  result = wpl_draw_validate_color(color);
   if (result != WPL_RESULT_OK)
     return result;
 
@@ -654,6 +761,10 @@ wpl_draw_polyline(WplDrawList* list,
     return result;
 
   result = wpl_draw_validate_thickness(thickness);
+  if (result != WPL_RESULT_OK)
+    return result;
+
+  result = wpl_draw_validate_polyline_geometry(points, point_count, thickness);
   if (result != WPL_RESULT_OK)
     return result;
 
@@ -705,14 +816,11 @@ wpl_draw_dashed_line(WplDrawList* list,
   if (list == NULL)
     return WPL_RESULT_INVALID_ARGUMENT;
 
-  if (!wpl_draw_vec2_is_finite(a) || !wpl_draw_vec2_is_finite(b))
-    return WPL_RESULT_INVALID_ARGUMENT;
-
-  result = wpl_draw_validate_color(color);
+  result = wpl_draw_validate_line_geometry(a, b, thickness);
   if (result != WPL_RESULT_OK)
     return result;
 
-  result = wpl_draw_validate_thickness(thickness);
+  result = wpl_draw_validate_color(color);
   if (result != WPL_RESULT_OK)
     return result;
 
@@ -856,11 +964,9 @@ wpl_draw_circle(WplDrawList* list,
   if (list == NULL)
     return WPL_RESULT_INVALID_ARGUMENT;
 
-  if (!wpl_draw_vec2_is_finite(center))
-    return WPL_RESULT_INVALID_ARGUMENT;
-
-  if (!wpl_draw_float_is_finite(radius) || radius < 0.0f)
-    return WPL_RESULT_INVALID_ARGUMENT;
+  result = wpl_draw_validate_circle_geometry(center, radius);
+  if (result != WPL_RESULT_OK)
+    return result;
 
   result = wpl_draw_validate_color(color);
   if (result != WPL_RESULT_OK)
