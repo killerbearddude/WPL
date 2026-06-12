@@ -69,6 +69,20 @@ struct WplWindow {
 
 const WplBackendVTable* wpl_linux_x11_backend(void);
 
+WplResult wpl_linux_x11_create_window(const WplWindowDesc* desc,
+                                      WplWindow** out_window);
+void wpl_linux_x11_destroy_window(WplWindow* window);
+bool wpl_linux_x11_window_should_close(const WplWindow* window);
+WplResult wpl_linux_x11_window_request_close(WplWindow* window);
+WplResult wpl_linux_x11_set_cursor_shape(WplWindow* window,
+                                         WplCursorShape shape);
+WplResult wpl_linux_x11_begin_frame(WplWindow* window);
+WplResult wpl_linux_x11_pump_events(WplWindow* window);
+WplResult wpl_linux_x11_end_frame(WplWindow* window);
+int wpl_linux_x11_window_width(const WplWindow* window);
+int wpl_linux_x11_window_height(const WplWindow* window);
+float wpl_linux_x11_window_delta_time(const WplWindow* window);
+
 void wpl_linux_x11_reset_transient_input(WplWindow* window);
 void wpl_linux_x11_clear_input_down_state(WplWindow* window);
 void wpl_linux_x11_init_detectable_auto_repeat(WplWindow* window);
@@ -99,5 +113,19 @@ void wpl_linux_x11_handle_key_release(WplWindow* window,
 
 void wpl_linux_x11_destroy_renderer_resources(WplWindow* window);
 WplResult wpl_linux_x11_present_frame(WplWindow* window);
+
+#if defined(WPL_LINUX_X11_RENAME_PUBLIC_SYMBOLS)
+#define wpl_create_window wpl_linux_x11_create_window
+#define wpl_destroy_window wpl_linux_x11_destroy_window
+#define wpl_window_should_close wpl_linux_x11_window_should_close
+#define wpl_window_request_close wpl_linux_x11_window_request_close
+#define wpl_set_cursor_shape wpl_linux_x11_set_cursor_shape
+#define wpl_begin_frame wpl_linux_x11_begin_frame
+#define wpl_pump_events wpl_linux_x11_pump_events
+#define wpl_end_frame wpl_linux_x11_end_frame
+#define wpl_window_width wpl_linux_x11_window_width
+#define wpl_window_height wpl_linux_x11_window_height
+#define wpl_window_delta_time wpl_linux_x11_window_delta_time
+#endif
 
 #endif /* WPL_LINUX_X11_INTERNAL_H */

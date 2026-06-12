@@ -71,6 +71,12 @@ add_library(wpl_linux_x11 STATIC
   backends/linux_x11/wpl_linux_x11_font.c
 )
 
+set_source_files_properties(
+  backends/linux_x11/wpl_linux_x11_window.c
+  PROPERTIES
+    COMPILE_DEFINITIONS WPL_LINUX_X11_RENAME_PUBLIC_SYMBOLS
+)
+
 target_include_directories(wpl_linux_x11
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -260,6 +266,17 @@ target_compile_options(wpl_test_backend_interface PRIVATE
   -Wpedantic
 )
 add_test(NAME wpl_test_backend_interface COMMAND wpl_test_backend_interface)
+
+add_executable(wpl_test_backend_dispatch
+  tests/test_backend_dispatch.c
+)
+target_link_libraries(wpl_test_backend_dispatch PRIVATE wpl)
+target_compile_options(wpl_test_backend_dispatch PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_backend_dispatch COMMAND wpl_test_backend_dispatch)
 
 add_executable(wpl_test_window_api
   tests/test_window_api.c

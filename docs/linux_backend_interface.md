@@ -7,7 +7,7 @@ API and is not installed for applications.
 ## Objective
 
 Introduce a narrow backend boundary so the current X11 implementation can be
-wrapped before later Linux backend work.  The first slice is behavior-preserving:
+wrapped before later Linux backend work.  The first slices are behavior-preserving:
 X11 remains the only backend, public headers stay unchanged, and no runtime
 backend selection is exposed.
 
@@ -46,9 +46,14 @@ This phase does not add:
 ## Current State
 
 `src/wpl_backend_internal.h` defines the private `WplBackendVTable`.
-`backends/linux_x11/wpl_linux_x11_backend.c` registers the existing X11 entry
-points in that table.
+`backends/linux_x11/wpl_linux_x11_backend.c` owns the current default backend
+selection and the public dispatch wrappers for window lifecycle, cursor,
+frame-boundary, window dimension, and frame-delta APIs.
 
-This keeps the first refactor small and gives later patches a concrete seam for
-moving dispatch, renderer presentation, and multi-window routing without changing
-the public API.
+`backends/linux_x11/wpl_linux_x11_window.c` still contains the X11 implementation,
+but its public symbol names are compiled as `wpl_linux_x11_*` backend-private
+symbols before they are registered in the backend table.
+
+Draw-list submission is still implemented directly by the X11 renderer and is
+registered in the backend table for the next slice.  A later patch should move
+that public entry point through the same dispatch path.
