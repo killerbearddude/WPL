@@ -45,48 +45,66 @@ _Static_assert(WPL_MOUSE_BUTTON_COUNT == 3,
 #define WPL_REPLAY_FRAME_OFFSET_RESERVED 163u
 #define WPL_REPLAY_FRAME_RESERVED_SIZE 29u
 
+#define WPL_REPLAY_INITIAL_FRAME_CAPACITY 1024u
+
+struct WplReplayRecorder {
+  WplReplayFrameV1* frames;
+  uint64_t frame_count;
+  uint64_t frame_capacity;
+  uint64_t next_frame_index;
+  uint64_t accumulated_time_microseconds;
+  bool recording;
+};
+
+struct WplReplayPlayer {
+  WplReplayFrameV1* frames;
+  uint64_t frame_count;
+  uint64_t cursor;
+  bool loaded;
+};
+
 static void
 wpl_replay_write_u32_le(uint8_t* dst, uint32_t value)
 {
   dst[0] = (uint8_t)(value & 0xffu);
-  dst[1] = (uint8_t)((value >> 8) & 0xffu);
-  dst[2] = (uint8_t)((value >> 16) & 0xffu);
-  dst[3] = (uint8_t)((value >> 24) & 0xffu);
+  dst[1] = (uint8_t)((value >> 8u) & 0xffu);
+  dst[2] = (uint8_t)((value >> 16u) & 0xffu);
+  dst[3] = (uint8_t)((value >> 24u) & 0xffu);
 }
 
 static void
 wpl_replay_write_u64_le(uint8_t* dst, uint64_t value)
 {
   dst[0] = (uint8_t)(value & 0xffu);
-  dst[1] = (uint8_t)((value >> 8) & 0xffu);
-  dst[2] = (uint8_t)((value >> 16) & 0xffu);
-  dst[3] = (uint8_t)((value >> 24) & 0xffu);
-  dst[4] = (uint8_t)((value >> 32) & 0xffu);
-  dst[5] = (uint8_t)((value >> 40) & 0xffu);
-  dst[6] = (uint8_t)((value >> 48) & 0xffu);
-  dst[7] = (uint8_t)((value >> 56) & 0xffu);
+  dst[1] = (uint8_t)((value >> 8u) & 0xffu);
+  dst[2] = (uint8_t)((value >> 16u) & 0xffu);
+  dst[3] = (uint8_t)((value >> 24u) & 0xffu);
+  dst[4] = (uint8_t)((value >> 32u) & 0xffu);
+  dst[5] = (uint8_t)((value >> 40u) & 0xffu);
+  dst[6] = (uint8_t)((value >> 48u) & 0xffu);
+  dst[7] = (uint8_t)((value >> 56u) & 0xffu);
 }
 
 static uint32_t
 wpl_replay_read_u32_le(const uint8_t* src)
 {
   return ((uint32_t)src[0])
-         | ((uint32_t)src[1] << 8)
-         | ((uint32_t)src[2] << 16)
-         | ((uint32_t)src[3] << 24);
+         | ((uint32_t)src[1] << 8u)
+         | ((uint32_t)src[2] << 16u)
+         | ((uint32_t)src[3] << 24u);
 }
 
 static uint64_t
 wpl_replay_read_u64_le(const uint8_t* src)
 {
   return ((uint64_t)src[0])
-         | ((uint64_t)src[1] << 8)
-         | ((uint64_t)src[2] << 16)
-         | ((uint64_t)src[3] << 24)
-         | ((uint64_t)src[4] << 32)
-         | ((uint64_t)src[5] << 40)
-         | ((uint64_t)src[6] << 48)
-         | ((uint64_t)src[7] << 56);
+         | ((uint64_t)src[1] << 8u)
+         | ((uint64_t)src[2] << 16u)
+         | ((uint64_t)src[3] << 24u)
+         | ((uint64_t)src[4] << 32u)
+         | ((uint64_t)src[5] << 40u)
+         | ((uint64_t)src[6] << 48u)
+         | ((uint64_t)src[7] << 56u);
 }
 
 static void
@@ -142,6 +160,9 @@ wpl_replay_f32_is_finite(float value)
 static bool
 wpl_replay_input_floats_are_finite(const WplInputState* input)
 {
+  if (input == NULL)
+    return false;
+
   return wpl_replay_f32_is_finite(input->mouse.position.x)
          && wpl_replay_f32_is_finite(input->mouse.position.y)
          && wpl_replay_f32_is_finite(input->mouse.delta.x)
@@ -172,7 +193,6 @@ wpl_replay_encode_header_v1(uint64_t frame_count,
   wpl_replay_write_u32_le(&out_header[WPL_REPLAY_HEADER_OFFSET_FLAGS],
                           WPL_REPLAY_VALID_FLAGS_V1);
   wpl_replay_write_u32_le(&out_header[WPL_REPLAY_HEADER_OFFSET_RESERVED], 0u);
-
   return WPL_RESULT_OK;
 }
 
@@ -181,12 +201,12 @@ wpl_replay_decode_header_v1(const uint8_t* data,
                             size_t size,
                             WplReplayHeaderV1* out_header)
 {
-  uint32_t version = 0u;
-  uint32_t header_size = 0u;
-  uint32_t frame_size = 0u;
-  uint64_t frame_count = 0u;
-  uint32_t flags = 0u;
-  uint32_t reserved = 0u;
+  uint32_t version;
+  uint32_t header_size;
+  uint32_t frame_size;
+  uint64_t frame_count;
+  uint32_t flags;
+  uint32_t reserved;
 
   if (data == NULL || out_header == NULL)
     return WPL_RESULT_INVALID_ARGUMENT;
@@ -235,7 +255,7 @@ WplResult
 wpl_replay_encode_frame_v1(const WplReplayFrameV1* frame,
                            uint8_t out_frame[WPL_REPLAY_FRAME_SIZE_V1])
 {
-  size_t i = 0u;
+  size_t i;
 
   if (frame == NULL || out_frame == NULL)
     return WPL_RESULT_INVALID_ARGUMENT;
@@ -296,8 +316,8 @@ wpl_replay_decode_frame_v1(const uint8_t* data,
                            WplReplayFrameV1* out_frame)
 {
   WplReplayFrameV1 frame;
-  WplResult result = WPL_RESULT_OK;
-  size_t i = 0u;
+  WplResult result;
+  size_t i;
 
   if (data == NULL || out_frame == NULL)
     return WPL_RESULT_INVALID_ARGUMENT;
@@ -308,7 +328,6 @@ wpl_replay_decode_frame_v1(const uint8_t* data,
     return WPL_RESULT_PARSE_ERROR;
 
   memset(&frame, 0, sizeof(frame));
-
   frame.frame_index = wpl_replay_read_u64_le(
     &data[WPL_REPLAY_FRAME_OFFSET_FRAME_INDEX]);
   frame.time_microseconds = wpl_replay_read_u64_le(
@@ -411,24 +430,6 @@ wpl_replay_validate_file_size_v1(uint64_t frame_count, size_t actual_size)
   return WPL_RESULT_OK;
 }
 
-#define WPL_REPLAY_INITIAL_FRAME_CAPACITY 1024u
-
-struct WplReplayRecorder {
-  WplReplayFrameV1* frames;
-  uint64_t frame_count;
-  uint64_t frame_capacity;
-  uint64_t next_frame_index;
-  uint64_t accumulated_time_microseconds;
-  bool recording;
-};
-
-struct WplReplayPlayer {
-  WplReplayFrameV1* frames;
-  uint64_t frame_count;
-  uint64_t cursor;
-  bool loaded;
-};
-
 static bool
 wpl_replay_delta_time_is_valid(float delta_time)
 {
@@ -439,7 +440,7 @@ static WplResult
 wpl_replay_delta_to_microseconds(float delta_time,
                                  uint32_t* out_microseconds)
 {
-  double microseconds = 0.0;
+  double microseconds;
 
   if (out_microseconds == NULL)
     return WPL_RESULT_INVALID_ARGUMENT;
@@ -471,10 +472,8 @@ wpl_replay_expected_file_size_v1(uint64_t frame_count, size_t* out_size)
     return WPL_RESULT_UNSUPPORTED;
 
   total_size += frame_count * (uint64_t)WPL_REPLAY_FRAME_SIZE_V1;
-  if (total_size > (uint64_t)WPL_MAX_FILE_SIZE_V0_1)
-    return WPL_RESULT_UNSUPPORTED;
-
-  if (total_size > (uint64_t)SIZE_MAX)
+  if (total_size > (uint64_t)WPL_MAX_FILE_SIZE_V0_1
+      || total_size > (uint64_t)SIZE_MAX)
     return WPL_RESULT_UNSUPPORTED;
 
   *out_size = (size_t)total_size;
@@ -484,8 +483,8 @@ wpl_replay_expected_file_size_v1(uint64_t frame_count, size_t* out_size)
 static WplResult
 wpl_replay_recorder_ensure_capacity(WplReplayRecorder* recorder)
 {
-  uint64_t new_capacity = 0u;
-  WplReplayFrameV1* new_frames = NULL;
+  uint64_t new_capacity;
+  WplReplayFrameV1* new_frames;
 
   if (recorder == NULL)
     return WPL_RESULT_INVALID_ARGUMENT;
@@ -527,14 +526,13 @@ wpl_replay_recorder_ensure_capacity(WplReplayRecorder* recorder)
 WplResult
 wpl_replay_recorder_create(WplReplayRecorder** out_recorder)
 {
-  WplReplayRecorder* recorder = NULL;
+  WplReplayRecorder* recorder;
 
   if (out_recorder == NULL)
     return WPL_RESULT_INVALID_ARGUMENT;
 
   *out_recorder = NULL;
-
-  recorder = (WplReplayRecorder*)calloc(1u, sizeof(WplReplayRecorder));
+  recorder = (WplReplayRecorder*)calloc(1u, sizeof(*recorder));
   if (recorder == NULL)
     return WPL_RESULT_OUT_OF_MEMORY;
 
@@ -571,13 +569,16 @@ wpl_replay_recorder_record_frame(WplReplayRecorder* recorder,
                                  float delta_time)
 {
   WplReplayFrameV1 frame;
-  WplResult result = WPL_RESULT_OK;
-  uint32_t delta_microseconds = 0u;
+  WplResult result;
+  uint32_t delta_microseconds;
 
   if (recorder == NULL || input == NULL)
     return WPL_RESULT_INVALID_ARGUMENT;
 
   if (!recorder->recording)
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  if (!wpl_replay_input_floats_are_finite(input))
     return WPL_RESULT_INVALID_ARGUMENT;
 
   result = wpl_replay_delta_to_microseconds(delta_time, &delta_microseconds);
@@ -587,34 +588,35 @@ wpl_replay_recorder_record_frame(WplReplayRecorder* recorder,
   if (recorder->frame_count >= WPL_REPLAY_MAX_FRAMES_V1)
     return WPL_RESULT_CAPACITY_EXCEEDED;
 
-  result = wpl_replay_recorder_ensure_capacity(recorder);
-  if (result != WPL_RESULT_OK)
-    return result;
-
   if (UINT64_MAX - recorder->accumulated_time_microseconds
       < (uint64_t)delta_microseconds)
     return WPL_RESULT_UNSUPPORTED;
 
+  result = wpl_replay_recorder_ensure_capacity(recorder);
+  if (result != WPL_RESULT_OK)
+    return result;
+
   memset(&frame, 0, sizeof(frame));
-  recorder->accumulated_time_microseconds += (uint64_t)delta_microseconds;
   frame.frame_index = recorder->next_frame_index;
-  frame.time_microseconds = recorder->accumulated_time_microseconds;
   frame.delta_microseconds = delta_microseconds;
+  frame.time_microseconds = (recorder->accumulated_time_microseconds
+                             + (uint64_t)delta_microseconds);
   frame.input = *input;
 
   recorder->frames[recorder->frame_count] = frame;
   recorder->frame_count++;
   recorder->next_frame_index++;
+  recorder->accumulated_time_microseconds = frame.time_microseconds;
   return WPL_RESULT_OK;
 }
 
 WplResult
 wpl_replay_recorder_save(WplReplayRecorder* recorder, const char* path)
 {
-  uint8_t* bytes = NULL;
-  size_t total_size = 0u;
-  WplResult result = WPL_RESULT_OK;
-  uint64_t i = 0u;
+  uint8_t* bytes;
+  size_t total_size;
+  WplResult result;
+  uint64_t i;
 
   if (recorder == NULL || path == NULL || path[0] == '\0')
     return WPL_RESULT_INVALID_ARGUMENT;
@@ -653,14 +655,13 @@ wpl_replay_recorder_save(WplReplayRecorder* recorder, const char* path)
 WplResult
 wpl_replay_player_create(WplReplayPlayer** out_player)
 {
-  WplReplayPlayer* player = NULL;
+  WplReplayPlayer* player;
 
   if (out_player == NULL)
     return WPL_RESULT_INVALID_ARGUMENT;
 
   *out_player = NULL;
-
-  player = (WplReplayPlayer*)calloc(1u, sizeof(WplReplayPlayer));
+  player = (WplReplayPlayer*)calloc(1u, sizeof(*player));
   if (player == NULL)
     return WPL_RESULT_OUT_OF_MEMORY;
 
@@ -684,9 +685,9 @@ wpl_replay_player_load(WplReplayPlayer* player, const char* path)
   WplFileData file = {0};
   WplReplayHeaderV1 header = {0};
   WplReplayFrameV1* new_frames = NULL;
-  WplResult result = WPL_RESULT_OK;
-  size_t expected_size = 0u;
-  uint64_t i = 0u;
+  WplResult result;
+  size_t expected_size;
+  uint64_t i;
 
   if (player == NULL || path == NULL || path[0] == '\0')
     return WPL_RESULT_INVALID_ARGUMENT;
@@ -751,6 +752,7 @@ wpl_replay_player_load(WplReplayPlayer* player, const char* path)
   player->cursor = 0u;
   player->loaded = true;
   new_frames = NULL;
+  result = WPL_RESULT_OK;
 
 cleanup:
   free(new_frames);
@@ -764,8 +766,10 @@ wpl_replay_player_next(WplReplayPlayer* player,
                        float* out_delta_time,
                        bool* out_has_frame)
 {
+  WplReplayFrameV1* frame;
+
   if (out_input != NULL)
-    *out_input = (WplInputState){0};
+    memset(out_input, 0, sizeof(*out_input));
   if (out_delta_time != NULL)
     *out_delta_time = 0.0f;
   if (out_has_frame != NULL)
@@ -781,9 +785,9 @@ wpl_replay_player_next(WplReplayPlayer* player,
   if (player->cursor >= player->frame_count)
     return WPL_RESULT_OK;
 
-  *out_input = player->frames[player->cursor].input;
-  *out_delta_time =
-    (float)player->frames[player->cursor].delta_microseconds / 1000000.0f;
+  frame = &player->frames[player->cursor];
+  *out_input = frame->input;
+  *out_delta_time = (float)((double)frame->delta_microseconds / 1000000.0);
   *out_has_frame = true;
   player->cursor++;
   return WPL_RESULT_OK;
