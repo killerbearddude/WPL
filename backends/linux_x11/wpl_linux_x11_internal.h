@@ -80,6 +80,10 @@ void wpl_linux_x11_input_release_key(WplInputState* input, WplKey key);
 
 void wpl_linux_x11_handle_motion(WplWindow* window,
                                  const XMotionEvent* event);
+void wpl_linux_x11_handle_enter(WplWindow* window,
+                                const XCrossingEvent* event);
+void wpl_linux_x11_handle_leave(WplWindow* window,
+                                const XCrossingEvent* event);
 void wpl_linux_x11_handle_button_press(WplWindow* window,
                                        const XButtonEvent* event);
 void wpl_linux_x11_handle_button_release(WplWindow* window,
