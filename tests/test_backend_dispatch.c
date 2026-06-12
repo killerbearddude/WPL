@@ -5,7 +5,7 @@
 #include "wpl/wpl_window.h"
 
 #include <assert.h>
-#include <stdbool.h>
+#include <stddef.h>
 
 int
 main(void)
