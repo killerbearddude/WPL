@@ -194,6 +194,7 @@ wpl_draw_validate_line_geometry(WplVec2 a, WplVec2 b, float thickness)
   float dy;
   float length_sq;
   float radius;
+  float radius_sq;
   float min_x;
   float max_x;
   float min_y;
@@ -222,6 +223,10 @@ wpl_draw_validate_line_geometry(WplVec2 a, WplVec2 b, float thickness)
 
   radius = thickness * 0.5f;
   if (!wpl_draw_float_is_finite(radius))
+    return WPL_RESULT_INVALID_ARGUMENT;
+
+  radius_sq = radius * radius;
+  if (!wpl_draw_float_is_finite(radius_sq))
     return WPL_RESULT_INVALID_ARGUMENT;
 
   min_x = a.x < b.x ? a.x : b.x;
