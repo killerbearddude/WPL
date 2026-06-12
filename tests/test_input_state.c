@@ -116,6 +116,44 @@ test_mouse_button_press_release_transition(void)
 }
 
 static void
+test_mouse_press_release_same_frame_records_both_transitions(void)
+{
+  WplInputState input = {0};
+
+  wpl_linux_x11_input_press_mouse_button(&input, WPL_MOUSE_BUTTON_RIGHT);
+  wpl_linux_x11_input_release_mouse_button(&input, WPL_MOUSE_BUTTON_RIGHT);
+
+  assert(input.mouse.button_down[WPL_MOUSE_BUTTON_RIGHT] == false);
+  assert(input.mouse.button_pressed[WPL_MOUSE_BUTTON_RIGHT] == true);
+  assert(input.mouse.button_released[WPL_MOUSE_BUTTON_RIGHT] == true);
+}
+
+static void
+test_redundant_mouse_release_does_not_emit_transition(void)
+{
+  WplInputState input = {0};
+
+  wpl_linux_x11_input_release_mouse_button(&input, WPL_MOUSE_BUTTON_MIDDLE);
+
+  assert(input.mouse.button_down[WPL_MOUSE_BUTTON_MIDDLE] == false);
+  assert(input.mouse.button_pressed[WPL_MOUSE_BUTTON_MIDDLE] == false);
+  assert(input.mouse.button_released[WPL_MOUSE_BUTTON_MIDDLE] == false);
+}
+
+static void
+test_invalid_mouse_buttons_are_ignored(void)
+{
+  WplInputState input = {0};
+
+  wpl_linux_x11_input_press_mouse_button(&input, (WplMouseButton)-1);
+  wpl_linux_x11_input_press_mouse_button(&input, WPL_MOUSE_BUTTON_COUNT);
+  wpl_linux_x11_input_release_mouse_button(&input, (WplMouseButton)-1);
+  wpl_linux_x11_input_release_mouse_button(&input, WPL_MOUSE_BUTTON_COUNT);
+
+  wpl_test_assert_snapshot_zeroed(&input);
+}
+
+static void
 test_key_press_release_transition_and_repeat_press(void)
 {
   WplInputState input = {0};
@@ -132,6 +170,44 @@ test_key_press_release_transition_and_repeat_press(void)
   wpl_linux_x11_input_release_key(&input, WPL_KEY_A);
   assert(input.keyboard.key_down[WPL_KEY_A] == false);
   assert(input.keyboard.key_released[WPL_KEY_A] == true);
+}
+
+static void
+test_key_press_release_same_frame_records_both_transitions(void)
+{
+  WplInputState input = {0};
+
+  wpl_linux_x11_input_press_key(&input, WPL_KEY_SPACE);
+  wpl_linux_x11_input_release_key(&input, WPL_KEY_SPACE);
+
+  assert(input.keyboard.key_down[WPL_KEY_SPACE] == false);
+  assert(input.keyboard.key_pressed[WPL_KEY_SPACE] == true);
+  assert(input.keyboard.key_released[WPL_KEY_SPACE] == true);
+}
+
+static void
+test_redundant_key_release_does_not_emit_transition(void)
+{
+  WplInputState input = {0};
+
+  wpl_linux_x11_input_release_key(&input, WPL_KEY_TAB);
+
+  assert(input.keyboard.key_down[WPL_KEY_TAB] == false);
+  assert(input.keyboard.key_pressed[WPL_KEY_TAB] == false);
+  assert(input.keyboard.key_released[WPL_KEY_TAB] == false);
+}
+
+static void
+test_unknown_and_invalid_keys_are_ignored(void)
+{
+  WplInputState input = {0};
+
+  wpl_linux_x11_input_press_key(&input, WPL_KEY_UNKNOWN);
+  wpl_linux_x11_input_press_key(&input, WPL_KEY_COUNT);
+  wpl_linux_x11_input_release_key(&input, WPL_KEY_UNKNOWN);
+  wpl_linux_x11_input_release_key(&input, WPL_KEY_COUNT);
+
+  wpl_test_assert_snapshot_zeroed(&input);
 }
 
 static void
@@ -172,6 +248,38 @@ test_clear_down_state_preserves_transients_but_clears_down_and_modifiers(void)
 }
 
 static void
+test_get_input_returns_by_value_snapshot(void)
+{
+  WplWindow window = {0};
+  WplInputState input;
+
+  window.input.keyboard.key_down[WPL_KEY_A] = true;
+  window.input.keyboard.key_pressed[WPL_KEY_A] = true;
+  window.input.mouse.button_down[WPL_MOUSE_BUTTON_LEFT] = true;
+  window.input.mouse.position.x = 12.0f;
+  window.input.mouse.position.y = 34.0f;
+
+  input = wpl_get_input(&window);
+  assert(input.keyboard.key_down[WPL_KEY_A] == true);
+  assert(input.keyboard.key_pressed[WPL_KEY_A] == true);
+  assert(input.mouse.button_down[WPL_MOUSE_BUTTON_LEFT] == true);
+  assert(input.mouse.position.x == 12.0f);
+  assert(input.mouse.position.y == 34.0f);
+
+  input.keyboard.key_down[WPL_KEY_A] = false;
+  input.keyboard.key_pressed[WPL_KEY_A] = false;
+  input.mouse.button_down[WPL_MOUSE_BUTTON_LEFT] = false;
+  input.mouse.position.x = 0.0f;
+  input.mouse.position.y = 0.0f;
+
+  assert(window.input.keyboard.key_down[WPL_KEY_A] == true);
+  assert(window.input.keyboard.key_pressed[WPL_KEY_A] == true);
+  assert(window.input.mouse.button_down[WPL_MOUSE_BUTTON_LEFT] == true);
+  assert(window.input.mouse.position.x == 12.0f);
+  assert(window.input.mouse.position.y == 34.0f);
+}
+
+static void
 test_first_motion_initializes_position_without_delta(void)
 {
   WplWindow window = {0};
@@ -207,6 +315,30 @@ test_subsequent_motion_accumulates_delta(void)
   assert(window.input.mouse.position.y == 13.0f);
   assert(window.input.mouse.delta.x == 4.0f);
   assert(window.input.mouse.delta.y == -7.0f);
+}
+
+static void
+test_multiple_motion_events_accumulate_delta_in_one_frame(void)
+{
+  WplWindow window = {0};
+  XMotionEvent event = {0};
+
+  event.x = 1;
+  event.y = 2;
+  wpl_linux_x11_handle_motion(&window, &event);
+
+  event.x = 5;
+  event.y = 8;
+  wpl_linux_x11_handle_motion(&window, &event);
+
+  event.x = -2;
+  event.y = 13;
+  wpl_linux_x11_handle_motion(&window, &event);
+
+  assert(window.input.mouse.position.x == -2.0f);
+  assert(window.input.mouse.position.y == 13.0f);
+  assert(window.input.mouse.delta.x == -3.0f);
+  assert(window.input.mouse.delta.y == 11.0f);
 }
 
 static void
@@ -261,6 +393,61 @@ test_wheel_button_updates_position_and_wheel_without_delta(void)
   assert(window.input.mouse.delta.x == 0.0f);
   assert(window.input.mouse.delta.y == 0.0f);
   assert(window.input.mouse.wheel_delta == 1.0f);
+}
+
+static void
+test_wheel_up_down_accumulates_and_horizontal_wheel_is_ignored(void)
+{
+  WplWindow window = {0};
+  XButtonEvent event = {0};
+
+  event.x = 1;
+  event.y = 2;
+  event.button = Button4;
+  wpl_linux_x11_handle_button_press(&window, &event);
+
+  event.x = 3;
+  event.y = 4;
+  event.button = Button5;
+  wpl_linux_x11_handle_button_press(&window, &event);
+
+  event.x = 5;
+  event.y = 6;
+  event.button = 6u;
+  wpl_linux_x11_handle_button_press(&window, &event);
+
+  event.button = 7u;
+  wpl_linux_x11_handle_button_press(&window, &event);
+
+  assert(window.input.mouse.position.x == 5.0f);
+  assert(window.input.mouse.position.y == 6.0f);
+  assert(window.input.mouse.delta.x == 0.0f);
+  assert(window.input.mouse.delta.y == 0.0f);
+  assert(window.input.mouse.wheel_delta == 0.0f);
+}
+
+static void
+test_wheel_release_events_do_not_change_wheel_or_buttons(void)
+{
+  WplWindow window = {0};
+  XButtonEvent event = {0};
+
+  window.input.mouse.wheel_delta = 2.0f;
+
+  event.x = 10;
+  event.y = 20;
+  event.button = Button4;
+  wpl_linux_x11_handle_button_release(&window, &event);
+
+  event.button = Button5;
+  wpl_linux_x11_handle_button_release(&window, &event);
+
+  assert(window.input.mouse.position.x == 10.0f);
+  assert(window.input.mouse.position.y == 20.0f);
+  assert(window.input.mouse.wheel_delta == 2.0f);
+  assert(window.input.mouse.button_down[WPL_MOUSE_BUTTON_LEFT] == false);
+  assert(window.input.mouse.button_down[WPL_MOUSE_BUTTON_RIGHT] == false);
+  assert(window.input.mouse.button_down[WPL_MOUSE_BUTTON_MIDDLE] == false);
 }
 
 static void
@@ -341,13 +528,23 @@ main(void)
   test_zero_initialized_snapshot_has_no_transitions();
   test_reset_transients_preserves_down_state();
   test_mouse_button_press_release_transition();
+  test_mouse_press_release_same_frame_records_both_transitions();
+  test_redundant_mouse_release_does_not_emit_transition();
+  test_invalid_mouse_buttons_are_ignored();
   test_key_press_release_transition_and_repeat_press();
+  test_key_press_release_same_frame_records_both_transitions();
+  test_redundant_key_release_does_not_emit_transition();
+  test_unknown_and_invalid_keys_are_ignored();
   test_wheel_delta_accumulates_then_resets();
   test_clear_down_state_preserves_transients_but_clears_down_and_modifiers();
+  test_get_input_returns_by_value_snapshot();
   test_first_motion_initializes_position_without_delta();
   test_subsequent_motion_accumulates_delta();
+  test_multiple_motion_events_accumulate_delta_in_one_frame();
   test_button_events_update_position_without_delta();
   test_wheel_button_updates_position_and_wheel_without_delta();
+  test_wheel_up_down_accumulates_and_horizontal_wheel_is_ignored();
+  test_wheel_release_events_do_not_change_wheel_or_buttons();
   test_enter_initializes_position_without_delta();
   test_leave_reenter_suppresses_artificial_delta();
   return 0;
