@@ -174,7 +174,7 @@ test_recorder_create_destroy(void)
 }
 
 static void
- test_recorder_record_validation(void)
+test_recorder_record_validation(void)
 {
   WplReplayRecorder* recorder = NULL;
   WplInputState input = wpl_test_input(0u);
@@ -199,7 +199,58 @@ static void
 }
 
 static void
- test_recorder_save_validation_and_zero_frame(void)
+test_recorder_rejects_nonfinite_input_without_state_mutation(void)
+{
+  WplReplayRecorder* recorder = NULL;
+  WplInputState bad_input = wpl_test_input(0u);
+  WplInputState good_input = wpl_test_input(1u);
+  WplFileData data = {0};
+  WplReplayHeaderV1 header = {0};
+  WplReplayFrameV1 frame;
+  char path[64];
+
+  assert(wpl_test_make_temp_path(path));
+  assert(wpl_replay_recorder_create(&recorder) == WPL_RESULT_OK);
+  assert(wpl_replay_recorder_begin(recorder) == WPL_RESULT_OK);
+
+  bad_input.mouse.position.x = NAN;
+  assert(wpl_replay_recorder_record_frame(recorder, &bad_input, 0.050f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+
+  assert(wpl_replay_recorder_save(recorder, path) == WPL_RESULT_OK);
+  assert(wpl_read_entire_file(path, &data) == WPL_RESULT_OK);
+  assert(data.size == WPL_REPLAY_HEADER_SIZE_V1);
+  assert(wpl_replay_decode_header_v1((const uint8_t*)data.data,
+                                     data.size,
+                                     &header) == WPL_RESULT_OK);
+  assert(header.frame_count == 0u);
+  wpl_free_file_data(&data);
+
+  assert(wpl_replay_recorder_record_frame(recorder, &good_input, 0.002f)
+         == WPL_RESULT_OK);
+  assert(wpl_replay_recorder_save(recorder, path) == WPL_RESULT_OK);
+  assert(wpl_read_entire_file(path, &data) == WPL_RESULT_OK);
+  assert(data.size == WPL_REPLAY_HEADER_SIZE_V1 + WPL_REPLAY_FRAME_SIZE_V1);
+  assert(wpl_replay_decode_header_v1((const uint8_t*)data.data,
+                                     data.size,
+                                     &header) == WPL_RESULT_OK);
+  assert(header.frame_count == 1u);
+  assert(wpl_replay_decode_frame_v1(((const uint8_t*)data.data)
+                                      + WPL_REPLAY_HEADER_SIZE_V1,
+                                    data.size - WPL_REPLAY_HEADER_SIZE_V1,
+                                    &frame) == WPL_RESULT_OK);
+  assert(frame.frame_index == 0u);
+  assert(frame.time_microseconds == 2000u);
+  assert(frame.delta_microseconds == 2000u);
+  wpl_test_assert_input_equal(frame.input, good_input);
+
+  wpl_free_file_data(&data);
+  unlink(path);
+  wpl_replay_recorder_destroy(recorder);
+}
+
+static void
+test_recorder_save_validation_and_zero_frame(void)
 {
   WplReplayRecorder* recorder = NULL;
   char path[64];
@@ -222,7 +273,7 @@ static void
 }
 
 static void
- test_recorder_records_and_saves_one_frame(void)
+test_recorder_records_and_saves_one_frame(void)
 {
   WplReplayRecorder* recorder = NULL;
   WplInputState input = wpl_test_input(1u);
@@ -258,7 +309,7 @@ static void
 }
 
 static void
- test_begin_resets_recorder_state(void)
+test_begin_resets_recorder_state(void)
 {
   WplReplayRecorder* recorder = NULL;
   WplInputState input = wpl_test_input(0u);
@@ -294,7 +345,7 @@ static void
 }
 
 static void
- test_player_create_destroy_and_next_validation(void)
+test_player_create_destroy_and_next_validation(void)
 {
   WplReplayPlayer* player = NULL;
   WplInputState input;
@@ -321,7 +372,7 @@ static void
 }
 
 static void
- test_player_load_validation_and_zero_frame(void)
+test_player_load_validation_and_zero_frame(void)
 {
   WplReplayPlayer* player = NULL;
   char path[64];
@@ -346,7 +397,7 @@ static void
 }
 
 static void
- test_player_load_one_frame_and_next(void)
+test_player_load_one_frame_and_next(void)
 {
   WplReplayPlayer* player = NULL;
   WplReplayFrameV1 frame;
@@ -382,7 +433,7 @@ static void
 }
 
 static void
- test_roundtrip_two_frames(void)
+test_roundtrip_two_frames(void)
 {
   WplReplayRecorder* recorder = NULL;
   WplReplayPlayer* player = NULL;
@@ -424,7 +475,7 @@ static void
 }
 
 static void
- test_malformed_loads_and_preserves_previous_replay(void)
+test_malformed_loads_and_preserves_previous_replay(void)
 {
   WplReplayPlayer* player = NULL;
   WplReplayFrameV1 frame;
@@ -458,7 +509,7 @@ static void
 }
 
 static void
- test_malformed_load_results(void)
+test_malformed_load_results(void)
 {
   WplReplayPlayer* player = NULL;
   char path[64];
@@ -490,6 +541,7 @@ main(void)
 {
   test_recorder_create_destroy();
   test_recorder_record_validation();
+  test_recorder_rejects_nonfinite_input_without_state_mutation();
   test_recorder_save_validation_and_zero_frame();
   test_recorder_records_and_saves_one_frame();
   test_begin_resets_recorder_state();
