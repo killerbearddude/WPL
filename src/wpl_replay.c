@@ -687,6 +687,7 @@ wpl_replay_player_load(WplReplayPlayer* player, const char* path)
   WplReplayFrameV1* new_frames = NULL;
   WplResult result;
   size_t expected_size;
+  uint64_t expected_time = 0u;
   uint64_t i;
 
   if (player == NULL || path == NULL || path[0] == '\0')
@@ -744,6 +745,23 @@ wpl_replay_player_load(WplReplayPlayer* player, const char* path)
       &new_frames[i]);
     if (result != WPL_RESULT_OK)
       goto cleanup;
+
+    if (new_frames[i].frame_index != i) {
+      result = WPL_RESULT_PARSE_ERROR;
+      goto cleanup;
+    }
+
+    if (UINT64_MAX - expected_time
+        < (uint64_t)new_frames[i].delta_microseconds) {
+      result = WPL_RESULT_PARSE_ERROR;
+      goto cleanup;
+    }
+
+    expected_time += (uint64_t)new_frames[i].delta_microseconds;
+    if (new_frames[i].time_microseconds != expected_time) {
+      result = WPL_RESULT_PARSE_ERROR;
+      goto cleanup;
+    }
   }
 
   free(player->frames);
