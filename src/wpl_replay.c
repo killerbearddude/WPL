@@ -646,7 +646,7 @@ wpl_replay_recorder_save(WplReplayRecorder* recorder, const char* path)
   }
 
   if (result == WPL_RESULT_OK)
-    result = wpl_write_entire_file(path, bytes, total_size);
+    result = wpl_write_entire_file_atomic(path, bytes, total_size);
 
   free(bytes);
   return result;
