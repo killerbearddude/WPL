@@ -171,6 +171,98 @@ test_clear_down_state_preserves_transients_but_clears_down_and_modifiers(void)
   assert(input.keyboard.alt_down == false);
 }
 
+static void
+test_first_motion_initializes_position_without_delta(void)
+{
+  WplWindow window = {0};
+  XMotionEvent event = {0};
+
+  event.x = 120;
+  event.y = 80;
+
+  wpl_linux_x11_handle_motion(&window, &event);
+
+  assert(window.mouse_position_initialized == true);
+  assert(window.input.mouse.position.x == 120.0f);
+  assert(window.input.mouse.position.y == 80.0f);
+  assert(window.input.mouse.delta.x == 0.0f);
+  assert(window.input.mouse.delta.y == 0.0f);
+}
+
+static void
+test_subsequent_motion_accumulates_delta(void)
+{
+  WplWindow window = {0};
+  XMotionEvent event = {0};
+
+  event.x = 10;
+  event.y = 20;
+  wpl_linux_x11_handle_motion(&window, &event);
+
+  event.x = 14;
+  event.y = 13;
+  wpl_linux_x11_handle_motion(&window, &event);
+
+  assert(window.input.mouse.position.x == 14.0f);
+  assert(window.input.mouse.position.y == 13.0f);
+  assert(window.input.mouse.delta.x == 4.0f);
+  assert(window.input.mouse.delta.y == -7.0f);
+}
+
+static void
+test_button_events_update_position_without_delta(void)
+{
+  WplWindow window = {0};
+  XButtonEvent event = {0};
+
+  event.x = 30;
+  event.y = 40;
+  event.button = Button1;
+  wpl_linux_x11_handle_button_press(&window, &event);
+
+  assert(window.mouse_position_initialized == true);
+  assert(window.input.mouse.position.x == 30.0f);
+  assert(window.input.mouse.position.y == 40.0f);
+  assert(window.input.mouse.delta.x == 0.0f);
+  assert(window.input.mouse.delta.y == 0.0f);
+  assert(window.input.mouse.button_down[WPL_MOUSE_BUTTON_LEFT] == true);
+  assert(window.input.mouse.button_pressed[WPL_MOUSE_BUTTON_LEFT] == true);
+
+  wpl_linux_x11_input_reset_transients(&window.input);
+
+  event.x = 35;
+  event.y = 50;
+  event.button = Button1;
+  wpl_linux_x11_handle_button_release(&window, &event);
+
+  assert(window.input.mouse.position.x == 35.0f);
+  assert(window.input.mouse.position.y == 50.0f);
+  assert(window.input.mouse.delta.x == 0.0f);
+  assert(window.input.mouse.delta.y == 0.0f);
+  assert(window.input.mouse.button_down[WPL_MOUSE_BUTTON_LEFT] == false);
+  assert(window.input.mouse.button_released[WPL_MOUSE_BUTTON_LEFT] == true);
+}
+
+static void
+test_wheel_button_updates_position_and_wheel_without_delta(void)
+{
+  WplWindow window = {0};
+  XButtonEvent event = {0};
+
+  event.x = 9;
+  event.y = 11;
+  event.button = Button4;
+
+  wpl_linux_x11_handle_button_press(&window, &event);
+
+  assert(window.mouse_position_initialized == true);
+  assert(window.input.mouse.position.x == 9.0f);
+  assert(window.input.mouse.position.y == 11.0f);
+  assert(window.input.mouse.delta.x == 0.0f);
+  assert(window.input.mouse.delta.y == 0.0f);
+  assert(window.input.mouse.wheel_delta == 1.0f);
+}
+
 int
 main(void)
 {
@@ -182,5 +274,9 @@ main(void)
   test_key_press_release_transition_and_repeat_press();
   test_wheel_delta_accumulates_then_resets();
   test_clear_down_state_preserves_transients_but_clears_down_and_modifiers();
+  test_first_motion_initializes_position_without_delta();
+  test_subsequent_motion_accumulates_delta();
+  test_button_events_update_position_without_delta();
+  test_wheel_button_updates_position_and_wheel_without_delta();
   return 0;
 }
