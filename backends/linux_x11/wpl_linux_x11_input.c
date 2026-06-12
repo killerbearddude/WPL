@@ -367,6 +367,26 @@ wpl_linux_x11_handle_motion(WplWindow* window, const XMotionEvent* event)
 }
 
 void
+wpl_linux_x11_handle_enter(WplWindow* window, const XCrossingEvent* event)
+{
+  if (window == NULL || event == NULL)
+    return;
+
+  wpl_linux_x11_update_mouse_position(window, event->x, event->y, false);
+  wpl_linux_x11_apply_modifier_state(&window->input, event->state);
+}
+
+void
+wpl_linux_x11_handle_leave(WplWindow* window, const XCrossingEvent* event)
+{
+  if (window == NULL || event == NULL)
+    return;
+
+  window->mouse_position_initialized = false;
+  wpl_linux_x11_apply_modifier_state(&window->input, event->state);
+}
+
+void
 wpl_linux_x11_handle_button_press(WplWindow* window,
                                   const XButtonEvent* event)
 {
