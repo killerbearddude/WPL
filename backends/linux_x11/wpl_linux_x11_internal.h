@@ -117,7 +117,7 @@ void wpl_linux_x11_handle_key_release(WplWindow* window,
 void wpl_linux_x11_destroy_renderer_resources(WplWindow* window);
 WplResult wpl_linux_x11_present_frame(WplWindow* window);
 
-#if defined(WPL_LINUX_X11_RENAME_PUBLIC_SYMBOLS)
+#if defined(WPL_LINUX_X11_RENAME_WINDOW_PUBLIC_SYMBOLS)
 #define wpl_create_window wpl_linux_x11_create_window
 #define wpl_destroy_window wpl_linux_x11_destroy_window
 #define wpl_window_should_close wpl_linux_x11_window_should_close

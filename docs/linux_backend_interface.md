@@ -40,8 +40,10 @@ This phase does not add:
 - X11/XKB/XImage/Visual/GC/Atom types remain backend-private.
 - Backend-neutral private headers must not include X11 or Wayland headers.
 - Public behavior must remain unchanged while the backend boundary is introduced.
-- Later backend work should route public entry points through the internal table
-  before adding a second backend.
+- Public entry points should dispatch through the internal table before any second
+  backend is introduced.
+- Backend table tests should bind each table slot to the expected backend-private
+  implementation symbol, not merely check for non-null function pointers.
 
 ## Current State
 
@@ -51,13 +53,30 @@ selection and the public dispatch wrappers for window lifecycle, cursor,
 frame-boundary, window dimension, frame-delta, and draw-list submission APIs.
 
 `backends/linux_x11/wpl_linux_x11_window.c` still contains the X11 window
-implementation, but its public symbol names are compiled as `wpl_linux_x11_*`
-backend-private symbols before they are registered in the backend table.
+implementation.  CMake compiles that translation unit with
+`WPL_LINUX_X11_RENAME_WINDOW_PUBLIC_SYMBOLS`, which maps its public API spellings
+to `wpl_linux_x11_*` backend-private symbols before they are registered in the
+backend table.
 
 `backends/linux_x11/wpl_linux_x11_renderer.c` still contains the X11 software
-renderer implementation, but `wpl_submit_draw_list` is compiled as
-`wpl_linux_x11_submit_draw_list` before it is registered in the backend table.
+renderer implementation.  CMake compiles that translation unit with
+`WPL_LINUX_X11_RENAME_RENDERER_PUBLIC_SYMBOLS`, which maps
+`wpl_submit_draw_list` to `wpl_linux_x11_submit_draw_list` before it is registered
+in the backend table.
 
 Presentation remains backend-private through `wpl_linux_x11_present_frame`, which
 is consumed by the X11 frame-end implementation.  No runtime backend selection or
 second backend exists yet.
+
+## Phase 1d Hardening
+
+Phase 1d is cleanup only.  It does not change runtime behavior.
+
+It tightens the dispatch seam by:
+
+- making the window symbol-renaming macro window-specific,
+- asserting exact X11 backend table slot bindings in `wpl_test_backend_interface`,
+- extending public dispatch smoke coverage for draw-list submission with a real
+  caller-owned draw list and a null window,
+- documenting the compile-time symbol-renaming mechanism used by the current X11
+  implementation files.

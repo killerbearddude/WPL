@@ -74,7 +74,7 @@ add_library(wpl_linux_x11 STATIC
 set_source_files_properties(
   backends/linux_x11/wpl_linux_x11_window.c
   PROPERTIES
-    COMPILE_DEFINITIONS WPL_LINUX_X11_RENAME_PUBLIC_SYMBOLS
+    COMPILE_DEFINITIONS WPL_LINUX_X11_RENAME_WINDOW_PUBLIC_SYMBOLS
 )
 
 set_source_files_properties(

@@ -13,6 +13,7 @@ main(void)
 {
   WplWindow* window = (WplWindow*)0;
   WplWindowDesc desc = {0};
+  WplDrawList* draw_list = NULL;
 
   assert(wpl_create_window(NULL, &window) == WPL_RESULT_INVALID_ARGUMENT);
   assert(window == NULL);
@@ -34,6 +35,10 @@ main(void)
   assert(wpl_window_delta_time(NULL) == 0.0f);
 
   assert(wpl_submit_draw_list(NULL, NULL) == WPL_RESULT_INVALID_ARGUMENT);
+  assert(wpl_create_draw_list(1u, &draw_list) == WPL_RESULT_OK);
+  assert(draw_list != NULL);
+  assert(wpl_submit_draw_list(NULL, draw_list) == WPL_RESULT_INVALID_ARGUMENT);
+  wpl_destroy_draw_list(draw_list);
 
   return 0;
 }
