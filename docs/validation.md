@@ -17,6 +17,12 @@ ctest --test-dir build --output-on-failure
 ./scripts/check_no_frame_pacing_api.sh
 ```
 
+Focused draw command validation:
+
+```sh
+ctest --test-dir build --output-on-failure -R 'wpl_test_draw_(list|list_edges|submit_lifetime)$'
+```
+
 CI requirements:
 
 - Ubuntu GCC job must pass.
@@ -103,6 +109,8 @@ Relevant checks for reviewers:
 - draw command storage remains private to WPL implementation files,
 - draw helpers do not add widget, layout, scene graph, or editor semantics,
 - multi-command draw helpers preserve all-or-nothing append behavior,
+- draw submission preserves caller-owned list lifetime,
+- draw submission does not expose backend renderer objects,
 - frame delta stays at the `wpl_begin_frame` boundary,
 - event pumping accumulates into the current frame snapshot,
 - timing uses monotonic clocks,
@@ -256,5 +264,6 @@ Before final PASS:
 - [ ] Fallback repeat-release path is validated or accepted as deferred risk.
 - [ ] Public header/backend leak checks pass.
 - [ ] Frame-pacing boundary check passes.
+- [ ] Focused draw command validation passes.
 - [ ] Replay round-trip tests pass.
 - [ ] README quickstart is verified on a clean Ubuntu-like machine.
