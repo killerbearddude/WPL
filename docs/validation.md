@@ -14,6 +14,7 @@ Run the default local validation path:
 ctest --test-dir build --output-on-failure
 ./scripts/check_public_headers.sh
 ./scripts/check_no_backend_leaks.sh
+./scripts/check_no_frame_pacing_api.sh
 ```
 
 CI requirements:
@@ -37,6 +38,7 @@ cmake -S . -B build-clang -DCMAKE_C_COMPILER=clang -DCMAKE_BUILD_TYPE=Debug
 cmake --build build-clang --parallel
 ctest --test-dir build-clang --output-on-failure
 ./scripts/check_public_headers.sh build-clang
+./scripts/check_no_frame_pacing_api.sh
 ```
 
 ## Sanitizer Validation
@@ -94,6 +96,7 @@ Relevant checks for reviewers:
 - frame delta stays at the `wpl_begin_frame` boundary,
 - event pumping accumulates into the current frame snapshot,
 - timing uses monotonic clocks,
+- public headers do not expose frame-pacing API surface unless explicitly added,
 - WPL APIs remain single-threaded unless explicitly documented otherwise,
 - patches do not add hidden background work or unsynchronized shared state.
 
@@ -241,5 +244,6 @@ Before final PASS:
 - [ ] XKB detectable auto-repeat behavior is manually validated.
 - [ ] Fallback repeat-release path is validated or accepted as deferred risk.
 - [ ] Public header/backend leak checks pass.
+- [ ] Frame-pacing boundary check passes.
 - [ ] Replay round-trip tests pass.
 - [ ] README quickstart is verified on a clean Ubuntu-like machine.

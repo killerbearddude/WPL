@@ -110,6 +110,7 @@ Focused checks:
 ctest --test-dir build --output-on-failure
 ./scripts/check_public_headers.sh
 ./scripts/check_no_backend_leaks.sh
+./scripts/check_no_frame_pacing_api.sh
 ```
 
 Sanitizer validation:
@@ -197,6 +198,7 @@ APIs.
 - No anti-aliasing.
 - ASCII bitmap text only.
 - No Unicode text shaping.
+- No public frame pacing, sleep, yield, event-wait, or target-FPS API.
 - The `v0.1.0` tag has no atomic file-write protocol; post-v0.1 `main` now
   includes a low-level atomic whole-file write helper.
 - Replay v1 only.
