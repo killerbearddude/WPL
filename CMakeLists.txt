@@ -180,6 +180,17 @@ target_compile_options(wpl_test_draw_list PRIVATE
 )
 add_test(NAME wpl_test_draw_list COMMAND wpl_test_draw_list)
 
+add_executable(wpl_test_draw_list_edges
+  tests/test_draw_list_edges.c
+)
+target_link_libraries(wpl_test_draw_list_edges PRIVATE wpl_core)
+target_compile_options(wpl_test_draw_list_edges PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_draw_list_edges COMMAND wpl_test_draw_list_edges)
+
 add_executable(wpl_test_draw_derived_geometry
   tests/test_draw_derived_geometry.c
 )
