@@ -153,6 +153,22 @@ target_compile_options(wpl_test_input_window_isolation PRIVATE
 )
 add_test(NAME wpl_test_input_window_isolation COMMAND wpl_test_input_window_isolation)
 
+add_executable(wpl_test_time
+  tests/test_time.c
+)
+target_include_directories(wpl_test_time
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/backends/linux_x11
+    ${X11_INCLUDE_DIR}
+)
+target_link_libraries(wpl_test_time PRIVATE wpl)
+target_compile_options(wpl_test_time PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_time COMMAND wpl_test_time)
+
 add_executable(wpl_test_draw_list
   tests/test_draw_list.c
 )
