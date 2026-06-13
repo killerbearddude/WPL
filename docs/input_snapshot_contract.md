@@ -19,7 +19,7 @@ The current public snapshot contains:
 - mouse button released transitions,
 - signed mouse wheel delta.
 
-The current public snapshot does not contain text input, UTF-8 composition, clipboard state, tablet input, touch input, raw relative mouse input, or high-DPI scale information.
+The current public snapshot does not contain text input, UTF-8 composition, clipboard state, tablet input, touch input, raw relative mouse input, or high-DPI scale information. Text input has a separate boundary contract in `docs/text_input_boundary.md`.
 
 ## Frame Lifecycle
 
@@ -85,6 +85,12 @@ Modifier state is separate from key transition arrays. Shift, Control, and Alt s
 
 Backends should suppress synthetic key-release/key-press pairs generated only by keyboard auto-repeat. Holding a key should keep `key_down[key]` true without emitting repeated released transitions. Repeated pressed transitions are not created while the key is already down.
 
+## Text Input Boundary
+
+Keyboard state is not text input. The current public snapshot does not expose committed characters, UTF-8 buffers, IME preedit/composition text, clipboard contents, or text editing commands.
+
+Future text input must be added explicitly rather than inferred from key transitions. See `docs/text_input_boundary.md` for the Phase 2d text-input boundary rules.
+
 ## Mouse Semantics
 
 Mouse position is window-local in pixels with the origin at the top-left of the window content area.
@@ -109,6 +115,8 @@ The authoritative mutable input state belongs to the backend-owned `WplWindow`. 
 Replay records and plays back `WplInputState` snapshots at the platform/input boundary. Replay does not serialize raw X11 events, backend-native keycodes, window-system messages, editor commands, widgets, or application state.
 
 A replayed input frame should be treated as if `wpl_get_input` returned that snapshot for the frame. Replay code must preserve the same persistent/transient field meaning as live input.
+
+If text input is added later, replay should record committed text snapshots at the same platform/input boundary rather than raw backend text events or editor commands.
 
 ## Backend Evolution Rules
 
