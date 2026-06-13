@@ -27,6 +27,8 @@ wpl_end_frame(window);
 It resets per-frame input transitions, computes the latest delta time, and
 prepares the backend-owned frame state for the next event pump.
 
+See `docs/timing_frame_contract.md` for the full timing and frame-delta contract.
+
 `wpl_pump_events` consumes pending backend events into the current frame snapshot.
 Calling it more than once during a frame is valid, but events accumulate into the
 same frame snapshot.  It does not reset transient input fields.
@@ -41,6 +43,9 @@ framebuffer.  The application retains ownership of the draw list.
 `wpl_end_frame` presents the framebuffer.  It does not reset input.  A minimized
 or zero-sized presentation target must remain a valid lifecycle state and should
 skip presentation rather than turning the window invalid.
+
+`wpl_end_frame` does not currently perform frame pacing. Applications own any
+sleep, yield, target-FPS, or event-wait policy.
 
 ## Object Ownership
 
