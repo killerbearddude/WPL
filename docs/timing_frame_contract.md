@@ -101,10 +101,15 @@ Frame pacing is currently application-owned. Applications may use
 `wpl_time_seconds` and their own Linux/POSIX sleep policy if they want to pace the
 main loop.
 
+Phase 3c adds `scripts/check_no_frame_pacing_api.sh` as a lightweight public-header
+boundary check. The script intentionally scans only `include/wpl` for pacing-like
+public API names. It does not ban private backend helpers, examples, tests, or
+application-side pacing experiments.
+
 Future frame pacing support must remain narrow. It should not add a game loop,
 scheduler, job system, GUI loop, or renderer policy. If added, it must document
-oversleep behavior, interruption behavior, clock source, and whether it blocks the
-calling thread.
+oversleep behavior, interruption behavior, clock source, whether it blocks the
+calling thread, and how it interacts with event pumping.
 
 ## Replay Boundary
 
@@ -144,7 +149,14 @@ Timing changes should add tests or documented validation for:
 - initial window delta behavior,
 - begin-frame delta update behavior,
 - sanitizer-clean timing code,
-- backend-leak checks for public headers.
+- backend-leak checks for public headers,
+- frame-pacing boundary checks for public headers.
 
-Phase 3a adds only this contract document and cross-references. Runtime timing
-tests should follow in a later Phase 3 patch.
+Run the frame-pacing boundary check with:
+
+```sh
+./scripts/check_no_frame_pacing_api.sh
+```
+
+The check must pass unless a patch explicitly introduces a public frame-pacing API
+and updates this contract at the same time.
