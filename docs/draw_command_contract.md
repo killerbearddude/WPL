@@ -226,8 +226,21 @@ Draw command changes should add tests or documented validation for:
 - finite geometry validation,
 - text byte limit behavior,
 - clip push/pop depth behavior,
+- draw submission and caller-owned lifetime behavior,
 - public-header backend cleanliness,
 - sanitizer-clean draw code.
 
-Phase 4a adds only this contract document and cross-references. Runtime draw-list
-hardening tests should follow in later Phase 4 patches.
+Current focused draw validation targets:
+
+```sh
+ctest --test-dir build --output-on-failure -R 'wpl_test_draw_(list|list_edges|submit_lifetime)$'
+```
+
+The focused targets cover the draw-list contract, edge-case ordering, and draw
+submission/lifetime boundary. They do not replace full CTest, sanitizer
+validation, backend-leak checks, or manual graphical smoke validation.
+
+Phase 4a documented this contract. Phase 4b added focused draw-list edge tests.
+Phase 4c added draw submission/lifetime boundary tests. Phase 4d syncs this
+validation documentation and closes the Phase 4 draw command buffer hardening
+pass.
