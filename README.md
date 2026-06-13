@@ -41,7 +41,7 @@ The repository currently includes:
 - Ubuntu GCC/Clang CI workflow
 - Sanitizer and Xvfb smoke validation paths
 
-See `docs/release_checklist.md`, `docs/validation_report_v0.1.md`, `docs/release_notes_v0.1.md`, `docs/release_process.md`, `docs/validation.md`, `docs/lifecycle_threading.md`, and `docs/api_review.md` for the v0.1 readiness review, validation evidence, lifecycle/threading assumptions, and release preparation notes.
+See `docs/release_checklist.md`, `docs/validation_report_v0.1.md`, `docs/release_notes_v0.1.md`, `docs/release_process.md`, `docs/validation.md`, `docs/lifecycle_threading.md`, `docs/input_snapshot_contract.md`, `docs/text_input_boundary.md`, `docs/timing_frame_contract.md`, and `docs/api_review.md` for readiness review notes, validation evidence, lifecycle/threading assumptions, input and text boundaries, timing/frame assumptions, and release preparation notes.
 
 ## Scope
 
@@ -176,12 +176,14 @@ narrow module header:
 Public headers are C-compatible and backend-clean. They do not expose X11 types,
 file descriptors, XImage ownership, renderer internals, or replay binary structs.
 
-## Lifecycle and threading
+## Lifecycle, input, timing, and threading
 
 WPL APIs are single-threaded unless a specific function documents otherwise.
 Callers must use one owner thread or provide external synchronization around all
-WPL access. Frame lifecycle and threading assumptions are documented in
-`docs/lifecycle_threading.md`.
+WPL access. Frame lifecycle, input snapshot semantics, text-input boundaries, and
+timing assumptions are documented in `docs/lifecycle_threading.md`,
+`docs/input_snapshot_contract.md`, `docs/text_input_boundary.md`, and
+`docs/timing_frame_contract.md`.
 
 ## Backend isolation rule
 
@@ -198,6 +200,7 @@ APIs.
 - No anti-aliasing.
 - ASCII bitmap text only.
 - No Unicode text shaping.
+- No committed text input, IME composition, clipboard, or text-editing command API.
 - No public frame pacing, sleep, yield, event-wait, or target-FPS API.
 - The `v0.1.0` tag has no atomic file-write protocol; post-v0.1 `main` now
   includes a low-level atomic whole-file write helper.
