@@ -78,11 +78,12 @@ The script builds WPL in `build-xvfb` and runs the backend window API smoke test
 under `xvfb-run`.  This validates create/pump/render/destroy coverage in a
 headless X11 server without adding new platform scope.
 
-## Lifecycle and Threading Contract
+## Lifecycle, Threading, and Timing Contracts
 
-Lifecycle and threading assumptions are part of validation.  See:
+Lifecycle, threading, and timing assumptions are part of validation.  See:
 
 - `docs/lifecycle_threading.md`
+- `docs/timing_frame_contract.md`
 
 Relevant checks for reviewers:
 
@@ -90,7 +91,9 @@ Relevant checks for reviewers:
 - backend-native handles remain private,
 - frame lifecycle order remains documented,
 - transient input reset stays at `wpl_begin_frame`,
+- frame delta stays at the `wpl_begin_frame` boundary,
 - event pumping accumulates into the current frame snapshot,
+- timing uses monotonic clocks,
 - WPL APIs remain single-threaded unless explicitly documented otherwise,
 - patches do not add hidden background work or unsynchronized shared state.
 
