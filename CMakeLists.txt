@@ -207,6 +207,22 @@ target_compile_options(wpl_test_draw_submit_lifetime PRIVATE
 )
 add_test(NAME wpl_test_draw_submit_lifetime COMMAND wpl_test_draw_submit_lifetime)
 
+add_executable(wpl_test_renderer_pixels
+  tests/test_renderer_pixels.c
+)
+target_include_directories(wpl_test_renderer_pixels
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/backends/linux_x11
+    ${X11_INCLUDE_DIR}
+)
+target_link_libraries(wpl_test_renderer_pixels PRIVATE wpl)
+target_compile_options(wpl_test_renderer_pixels PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_renderer_pixels COMMAND wpl_test_renderer_pixels)
+
 add_executable(wpl_test_draw_derived_geometry
   tests/test_draw_derived_geometry.c
 )
