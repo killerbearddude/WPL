@@ -86,15 +86,16 @@ The script builds WPL in `build-xvfb` and runs the backend window API smoke test
 under `xvfb-run`.  This validates create/pump/render/destroy coverage in a
 headless X11 server without adding new platform scope.
 
-## Lifecycle, Input, Draw, Threading, and Timing Contracts
+## Lifecycle, Input, Draw, Renderer, Threading, and Timing Contracts
 
-Lifecycle, input, text-input boundary, draw command, threading, and timing
-assumptions are part of validation.  See:
+Lifecycle, input, text-input boundary, draw command, software-renderer,
+threading, and timing assumptions are part of validation.  See:
 
 - `docs/lifecycle_threading.md`
 - `docs/input_snapshot_contract.md`
 - `docs/text_input_boundary.md`
 - `docs/draw_command_contract.md`
+- `docs/software_renderer_contract.md`
 - `docs/timing_frame_contract.md`
 
 Relevant checks for reviewers:
@@ -111,6 +112,9 @@ Relevant checks for reviewers:
 - multi-command draw helpers preserve all-or-nothing append behavior,
 - draw submission preserves caller-owned list lifetime,
 - draw submission does not expose backend renderer objects,
+- renderer resources remain backend-owned and private,
+- renderer changes do not introduce GPU abstraction or retained render state,
+- renderer clipping, framebuffer, and presentation behavior remain documented,
 - frame delta stays at the `wpl_begin_frame` boundary,
 - event pumping accumulates into the current frame snapshot,
 - timing uses monotonic clocks,
