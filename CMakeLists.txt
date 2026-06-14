@@ -336,6 +336,21 @@ target_compile_options(wpl_test_replay PRIVATE
 )
 add_test(NAME wpl_test_replay COMMAND wpl_test_replay)
 
+add_executable(wpl_test_replay_edges
+  tests/test_replay_edges.c
+)
+target_include_directories(wpl_test_replay_edges
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+target_link_libraries(wpl_test_replay_edges PRIVATE wpl_core)
+target_compile_options(wpl_test_replay_edges PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_replay_edges COMMAND wpl_test_replay_edges)
+
 add_executable(wpl_test_log
   tests/test_log.c
 )
