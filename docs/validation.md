@@ -44,6 +44,9 @@ Focused debug overlay validation:
 ctest --test-dir build --output-on-failure -R 'wpl_test_debug_overlay$'
 ```
 
+The focused debug overlay target covers append counts, custom line handling,
+capacity failure, truncation rollback, and no-partial-mutation cases.
+
 CI requirements:
 
 - Ubuntu GCC job must pass.
@@ -145,6 +148,7 @@ Relevant checks for reviewers:
 - debug overlay remains append-only draw command generation,
 - debug overlay failures do not commit partial overlay appends,
 - debug overlay custom lines do not add widget, layout, graph, or editor policy,
+- debug overlay behavior stays covered by focused validation,
 - frame delta stays at the `wpl_begin_frame` boundary,
 - event pumping accumulates into the current frame snapshot,
 - timing uses monotonic clocks,
