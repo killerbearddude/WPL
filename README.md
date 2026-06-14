@@ -41,7 +41,7 @@ The repository currently includes:
 - Ubuntu GCC/Clang CI workflow
 - Sanitizer and Xvfb smoke validation paths
 
-See `docs/release_checklist.md`, `docs/validation_report_v0.1.md`, `docs/release_notes_v0.1.md`, `docs/release_process.md`, `docs/validation.md`, `docs/lifecycle_threading.md`, `docs/input_snapshot_contract.md`, `docs/text_input_boundary.md`, `docs/timing_frame_contract.md`, `docs/draw_command_contract.md`, `docs/software_renderer_contract.md`, and `docs/api_review.md` for readiness review notes, validation evidence, lifecycle/threading assumptions, input and text boundaries, timing/frame assumptions, draw command buffer assumptions, software-renderer assumptions, and release preparation notes.
+See `docs/release_checklist.md`, `docs/validation_report_v0.1.md`, `docs/release_notes_v0.1.md`, `docs/release_process.md`, `docs/validation.md`, `docs/lifecycle_threading.md`, `docs/input_snapshot_contract.md`, `docs/text_input_boundary.md`, `docs/timing_frame_contract.md`, `docs/draw_command_contract.md`, `docs/software_renderer_contract.md`, `docs/canvas_math_contract.md`, and `docs/api_review.md` for readiness review notes, validation evidence, lifecycle/threading assumptions, input and text boundaries, timing/frame assumptions, draw command buffer assumptions, software-renderer assumptions, canvas math assumptions, and release preparation notes.
 
 ## Scope
 
@@ -176,16 +176,16 @@ narrow module header:
 Public headers are C-compatible and backend-clean. They do not expose X11 types,
 file descriptors, XImage ownership, renderer internals, or replay binary structs.
 
-## Lifecycle, input, draw, renderer, timing, and threading
+## Lifecycle, input, draw, renderer, canvas, timing, and threading
 
 WPL APIs are single-threaded unless a specific function documents otherwise.
 Callers must use one owner thread or provide external synchronization around all
 WPL access. Frame lifecycle, input snapshot semantics, text-input boundaries,
-draw command buffer assumptions, software-renderer assumptions, and timing
-assumptions are documented in `docs/lifecycle_threading.md`,
+draw command buffer assumptions, software-renderer assumptions, canvas math
+assumptions, and timing assumptions are documented in `docs/lifecycle_threading.md`,
 `docs/input_snapshot_contract.md`, `docs/text_input_boundary.md`,
-`docs/draw_command_contract.md`, `docs/software_renderer_contract.md`, and
-`docs/timing_frame_contract.md`.
+`docs/draw_command_contract.md`, `docs/software_renderer_contract.md`,
+`docs/canvas_math_contract.md`, and `docs/timing_frame_contract.md`.
 
 ## Backend isolation rule
 

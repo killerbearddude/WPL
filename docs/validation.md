@@ -29,6 +29,12 @@ Focused renderer validation:
 ctest --test-dir build --output-on-failure -R 'wpl_test_renderer_(pixels|targets)$'
 ```
 
+Focused canvas validation:
+
+```sh
+ctest --test-dir build --output-on-failure -R 'wpl_test_canvas$'
+```
+
 CI requirements:
 
 - Ubuntu GCC job must pass.
@@ -92,16 +98,17 @@ The script builds WPL in `build-xvfb` and runs the backend window API smoke test
 under `xvfb-run`.  This validates create/pump/render/destroy coverage in a
 headless X11 server without adding new platform scope.
 
-## Lifecycle, Input, Draw, Renderer, Threading, and Timing Contracts
+## Lifecycle, Input, Draw, Renderer, Canvas, Threading, and Timing Contracts
 
-Lifecycle, input, text-input boundary, draw command, software-renderer,
-threading, and timing assumptions are part of validation.  See:
+Lifecycle, input, text-input boundary, draw command, software-renderer, canvas
+math, threading, and timing assumptions are part of validation.  See:
 
 - `docs/lifecycle_threading.md`
 - `docs/input_snapshot_contract.md`
 - `docs/text_input_boundary.md`
 - `docs/draw_command_contract.md`
 - `docs/software_renderer_contract.md`
+- `docs/canvas_math_contract.md`
 - `docs/timing_frame_contract.md`
 
 Relevant checks for reviewers:
@@ -122,6 +129,8 @@ Relevant checks for reviewers:
 - renderer changes do not introduce GPU abstraction or retained render state,
 - renderer clipping, framebuffer, and presentation behavior remain documented,
 - renderer pixel and target-boundary behavior stay covered by focused validation,
+- canvas math stays backend-independent and free of widget/layout/editor policy,
+- canvas coordinate and rectangle behavior stay covered by focused validation,
 - frame delta stays at the `wpl_begin_frame` boundary,
 - event pumping accumulates into the current frame snapshot,
 - timing uses monotonic clocks,
@@ -277,5 +286,6 @@ Before final PASS:
 - [ ] Frame-pacing boundary check passes.
 - [ ] Focused draw command validation passes.
 - [ ] Focused renderer validation passes.
+- [ ] Focused canvas validation passes.
 - [ ] Replay round-trip tests pass.
 - [ ] README quickstart is verified on a clean Ubuntu-like machine.
