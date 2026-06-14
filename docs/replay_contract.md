@@ -107,6 +107,7 @@ Player behavior:
   invalid flags, nonzero reserved header data, invalid frame data, invalid frame
   ordering, invalid accumulated times, short files, and trailing bytes,
 - failed load does not replace a previously loaded valid replay,
+- failed load does not rewind the existing playback cursor,
 - successful load resets playback cursor to the first frame,
 - zero-frame replays are valid and immediately report no frame.
 
@@ -183,7 +184,9 @@ Replay changes should add tests or documented validation for:
 - recorder begin/reset behavior,
 - record-before-begin rejection,
 - invalid argument handling,
+- invalid `player_next` output reset behavior,
 - negative/nonfinite delta rejection,
+- zero-delta round trip behavior,
 - nonfinite input rejection without state mutation,
 - zero-frame save/load behavior,
 - one-frame save/load behavior,
@@ -198,19 +201,24 @@ Replay changes should add tests or documented validation for:
 - truncated file rejection,
 - trailing byte rejection,
 - failed load preserving previous valid replay,
+- failed load preserving playback cursor position,
 - replay format size validation,
 - public-header/backend leak checks.
 
 Current focused replay validation target:
 
 ```sh
-ctest --test-dir build --output-on-failure -R 'wpl_test_replay(_format)?$'
+ctest --test-dir build --output-on-failure -R 'wpl_test_replay(_format|_edges)?$'
 ```
+
+The focused replay targets cover v1 header/frame encoding, malformed input
+rejection, recorder/player validation, invalid next-output reset, zero-frame
+save/load, zero-delta round trips, multi-frame round trips, trailing-byte
+rejection, failed-load preservation, and cursor-preservation behavior.
 
 Focused replay validation does not replace full CTest, sanitizer validation,
 backend-leak checks, frame-pacing boundary checks, focused draw, renderer, canvas,
 debug overlay, file I/O validation, or Xvfb smoke validation.
 
-Phase 9a adds this contract document and cross-references. Additional Phase 9
-patches can add edge tests or implementation hardening where concrete coverage
-needs are identified.
+Phase 9a documented this contract. Phase 9b added replay edge coverage. Phase 9c
+syncs this validation documentation and closes the Phase 9 replay hardening pass.
