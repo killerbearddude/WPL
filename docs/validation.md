@@ -50,8 +50,12 @@ capacity failure, truncation rollback, and no-partial-mutation cases.
 Focused file I/O validation:
 
 ```sh
-ctest --test-dir build --output-on-failure -R 'wpl_test_file_io$'
+ctest --test-dir build --output-on-failure -R 'wpl_test_file_io(_edges)?$'
 ```
+
+The focused file I/O targets cover whole-file read/write behavior, atomic
+replacement behavior, and edge cases for directories, zero-size writes,
+trailing-slash atomic paths, temporary-file cleanup, and file-data reset.
 
 CI requirements:
 
@@ -158,6 +162,7 @@ Relevant checks for reviewers:
 - debug overlay behavior stays covered by focused validation,
 - file I/O remains whole-file platform infrastructure,
 - file I/O does not add serialization, asset-pipeline, graph, or editor policy,
+- file I/O behavior stays covered by focused validation,
 - atomic file writes clean up temporary files on validation failures,
 - frame delta stays at the `wpl_begin_frame` boundary,
 - event pumping accumulates into the current frame snapshot,

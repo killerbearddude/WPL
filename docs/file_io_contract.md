@@ -158,16 +158,20 @@ File I/O changes should add tests or documented validation for:
 - invalid path rejection,
 - output reset on read failure,
 - missing file handling,
+- directory read rejection,
 - empty file reads,
 - binary reads with embedded NUL bytes,
 - direct zero-size writes,
+- direct zero-size truncation of existing files,
 - direct binary writes,
 - direct overwrite/truncation behavior,
 - oversized read/write rejection,
 - atomic zero-size writes,
+- atomic zero-size replacement of existing files,
 - atomic binary writes,
 - atomic replacement behavior,
 - atomic missing-parent failure,
+- atomic trailing-slash path rejection without temporary-file residue,
 - atomic temporary-file cleanup after validation failure,
 - `wpl_free_file_data` null/reset behavior,
 - backend-leak checks for public headers.
@@ -175,13 +179,19 @@ File I/O changes should add tests or documented validation for:
 Current focused file I/O validation target:
 
 ```sh
-ctest --test-dir build --output-on-failure -R 'wpl_test_file_io$'
+ctest --test-dir build --output-on-failure -R 'wpl_test_file_io(_edges)?$'
 ```
+
+The focused file I/O targets cover invalid path rejection, output reset behavior,
+missing and non-regular input handling, empty and binary whole-file reads,
+direct and atomic zero-size writes, overwrite/replacement behavior, oversized
+rejection, atomic temporary-file cleanup, trailing-slash atomic path rejection,
+and `wpl_free_file_data` reset behavior.
 
 Focused file I/O validation does not replace full CTest, sanitizer validation,
 backend-leak checks, frame-pacing boundary checks, focused draw, renderer, canvas,
 debug overlay validation, replay validation, or Xvfb smoke validation.
 
-Phase 8a adds this contract document and cross-references. Additional Phase 8
-patches can add edge tests or implementation hardening where concrete coverage
-needs are identified.
+Phase 8a documented this contract. Phase 8b added file I/O edge coverage. Phase
+8c syncs this validation documentation and closes the Phase 8 file I/O hardening
+pass.
