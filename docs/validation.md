@@ -23,6 +23,12 @@ Focused draw command validation:
 ctest --test-dir build --output-on-failure -R 'wpl_test_draw_(list|list_edges|submit_lifetime)$'
 ```
 
+Focused renderer validation:
+
+```sh
+ctest --test-dir build --output-on-failure -R 'wpl_test_renderer_(pixels|targets)$'
+```
+
 CI requirements:
 
 - Ubuntu GCC job must pass.
@@ -115,6 +121,7 @@ Relevant checks for reviewers:
 - renderer resources remain backend-owned and private,
 - renderer changes do not introduce GPU abstraction or retained render state,
 - renderer clipping, framebuffer, and presentation behavior remain documented,
+- renderer pixel and target-boundary behavior stay covered by focused validation,
 - frame delta stays at the `wpl_begin_frame` boundary,
 - event pumping accumulates into the current frame snapshot,
 - timing uses monotonic clocks,
@@ -269,5 +276,6 @@ Before final PASS:
 - [ ] Public header/backend leak checks pass.
 - [ ] Frame-pacing boundary check passes.
 - [ ] Focused draw command validation passes.
+- [ ] Focused renderer validation passes.
 - [ ] Replay round-trip tests pass.
 - [ ] README quickstart is verified on a clean Ubuntu-like machine.

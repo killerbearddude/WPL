@@ -184,5 +184,17 @@ Renderer changes should add tests or documented validation for:
 - backend-leak checks for public headers,
 - Xvfb smoke coverage for the X11 presentation path.
 
-Phase 5a adds only this contract document and cross-references. Runtime renderer
-hardening tests should follow in later Phase 5 patches.
+Current focused renderer validation targets:
+
+```sh
+ctest --test-dir build --output-on-failure -R 'wpl_test_renderer_(pixels|targets)$'
+```
+
+The focused targets cover framebuffer/color/clip pixel behavior and render-target
+resize/presentation boundaries. They do not replace full CTest, sanitizer
+validation, backend-leak checks, or Xvfb smoke validation.
+
+Phase 5a documented this contract. Phase 5b added renderer framebuffer/color/clip
+pixel tests. Phase 5c added renderer target resize and presentation-boundary
+tests. Phase 5d syncs this validation documentation and closes the Phase 5
+software-renderer hardening pass.
