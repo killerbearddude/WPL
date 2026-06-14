@@ -270,6 +270,72 @@ test_truncated_custom_line_does_not_mutate_count(void)
   wpl_destroy_draw_list(list);
 }
 
+static void
+test_empty_custom_line_strings_are_valid(void)
+{
+  WplDrawList* list = NULL;
+  WplDebugStats stats = wpl_test_stats();
+  WplInputState input = wpl_test_input();
+  WplDebugLine lines[2] = {
+    {"", ""},
+    {"Label", ""}
+  };
+
+  assert(wpl_create_draw_list(WPL_TEST_DEBUG_OVERLAY_COMMAND_COUNT + 2u, &list) ==
+         WPL_RESULT_OK);
+
+  assert(wpl_debug_draw_overlay_ex(list, &stats, &input, lines, 2u) ==
+         WPL_RESULT_OK);
+  assert(wpl_draw_list_count(list) == WPL_TEST_DEBUG_OVERLAY_COMMAND_COUNT + 2u);
+
+  wpl_destroy_draw_list(list);
+}
+
+static void
+test_existing_command_survives_capacity_failure(void)
+{
+  WplDrawList* list = NULL;
+  WplDebugStats stats = wpl_test_stats();
+  WplInputState input = wpl_test_input();
+  size_t before = 0u;
+
+  assert(wpl_create_draw_list(WPL_TEST_DEBUG_OVERLAY_COMMAND_COUNT, &list) ==
+         WPL_RESULT_OK);
+  assert(wpl_draw_clear(list, (WplColor){0.0f, 0.0f, 0.0f, 1.0f}) ==
+         WPL_RESULT_OK);
+
+  before = wpl_draw_list_count(list);
+  assert(before == 1u);
+  assert(wpl_debug_draw_overlay(list, &stats, &input) ==
+         WPL_RESULT_CAPACITY_EXCEEDED);
+  assert(wpl_draw_list_count(list) == before);
+
+  wpl_destroy_draw_list(list);
+}
+
+static void
+test_truncated_backend_name_rolls_back_partial_append(void)
+{
+  WplDrawList* list = NULL;
+  WplDebugStats stats = wpl_test_stats();
+  WplInputState input = wpl_test_input();
+  char long_backend_name[160];
+  size_t before = 0u;
+
+  memset(long_backend_name, 'b', sizeof(long_backend_name) - 1u);
+  long_backend_name[sizeof(long_backend_name) - 1u] = '\0';
+  stats.backend_name = long_backend_name;
+
+  assert(wpl_create_draw_list(WPL_TEST_DEBUG_OVERLAY_COMMAND_COUNT, &list) ==
+         WPL_RESULT_OK);
+
+  before = wpl_draw_list_count(list);
+  assert(wpl_debug_draw_overlay(list, &stats, &input) == WPL_RESULT_TRUNCATED);
+  assert(wpl_draw_list_count(list) == before);
+
+  wpl_destroy_draw_list(list);
+}
+
 int
 main(void)
 {
@@ -281,6 +347,9 @@ main(void)
   test_success_appends_expected_count();
   test_overlay_preserves_existing_commands();
   test_truncated_custom_line_does_not_mutate_count();
+  test_empty_custom_line_strings_are_valid();
+  test_existing_command_survives_capacity_failure();
+  test_truncated_backend_name_rolls_back_partial_append();
 
   return 0;
 }
