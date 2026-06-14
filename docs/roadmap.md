@@ -40,6 +40,33 @@ remain here as release history, not as active blockers for current `main`.
 Patch 017 resolved the hard spec-conformance blockers found after the initial
 release-readiness review.
 
+## Completed After v0.1
+
+- Public ASCII text measurement.
+- Public text command byte limit.
+- Atomic whole-file write helper.
+- Polyline draw helper.
+- Dashed line draw helper.
+- Clip rectangle stack.
+- Cursor shape API.
+- User-supplied debug overlay lines.
+- Panel and rounded rectangle primitives.
+- Software renderer contract documentation and renderer pixel/target tests.
+- Canvas math contract documentation and rectangle/transform edge tests.
+- Debug overlay contract documentation and edge tests.
+- File I/O contract documentation and edge tests.
+- Replay contract documentation and edge tests.
+- Phase 10 public API audit.
+- Final readiness checklist for current branch validation.
+
+## Current Validation and Readiness References
+
+- `docs/validation.md` defines required validation commands and reviewer gates.
+- `docs/api_review.md` records the current public API audit result.
+- `docs/final_readiness_checklist.md` records the current branch readiness gate.
+- Historical `v0.1.0` validation evidence remains in
+  `docs/validation_report_v0.1.md`.
+
 ## Deferred Until After v0.1
 
 - High-DPI design.
@@ -48,10 +75,11 @@ release-readiness review.
 - Anti-aliased rasterization.
 - Richer text support.
 - Allocator hooks.
-- Sanitizer CI.
 - Release packaging.
 - Backend-independent software renderer split, if the X11 renderer grows too
   backend-coupled.
+- Targeted fallback repeat-release validation in an environment that can force
+  non-XKB-detectable repeat behavior.
 
 ## Post-v0.1 WNG-Driven Roadmap
 
