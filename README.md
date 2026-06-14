@@ -41,7 +41,26 @@ The repository currently includes:
 - Ubuntu GCC/Clang CI workflow
 - Sanitizer and Xvfb smoke validation paths
 
-See `docs/release_checklist.md`, `docs/validation_report_v0.1.md`, `docs/release_notes_v0.1.md`, `docs/release_process.md`, `docs/validation.md`, `docs/lifecycle_threading.md`, `docs/input_snapshot_contract.md`, `docs/text_input_boundary.md`, `docs/timing_frame_contract.md`, `docs/draw_command_contract.md`, `docs/software_renderer_contract.md`, `docs/canvas_math_contract.md`, `docs/debug_overlay_contract.md`, `docs/file_io_contract.md`, `docs/replay_contract.md`, and `docs/api_review.md` for readiness review notes, validation evidence, lifecycle/threading assumptions, input and text boundaries, timing/frame assumptions, draw command buffer assumptions, software-renderer assumptions, canvas math assumptions, debug overlay assumptions, file I/O assumptions, replay assumptions, and release preparation notes.
+Documentation index:
+
+- `docs/final_readiness_checklist.md` — current branch readiness checklist
+- `docs/release_checklist.md` — historical v0.1 release checklist
+- `docs/validation_report_v0.1.md` — v0.1 validation evidence
+- `docs/release_notes_v0.1.md` — v0.1 release notes
+- `docs/release_process.md` — release preparation process
+- `docs/validation.md` — validation commands and reviewer gates
+- `docs/lifecycle_threading.md` — lifecycle and threading assumptions
+- `docs/input_snapshot_contract.md` — input snapshot contract
+- `docs/text_input_boundary.md` — text input boundary
+- `docs/timing_frame_contract.md` — timing and frame boundary contract
+- `docs/draw_command_contract.md` — draw command buffer contract
+- `docs/software_renderer_contract.md` — software renderer contract
+- `docs/canvas_math_contract.md` — canvas math contract
+- `docs/debug_overlay_contract.md` — debug overlay contract
+- `docs/file_io_contract.md` — file I/O contract
+- `docs/replay_contract.md` — replay contract
+- `docs/api_review.md` — public API review
+- `docs/roadmap.md` — roadmap and status notes
 
 ## Scope
 
