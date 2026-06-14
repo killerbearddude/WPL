@@ -199,6 +199,83 @@ test_zoom_around_failure_preserves_view(void)
 }
 
 static void
+test_pan_by_zero_delta_preserves_view(void)
+{
+  WplCanvasView view = wpl_test_view(-30.0f, 45.0f, 2.5f);
+  WplCanvasView before = view;
+
+  assert(wpl_canvas_pan_by(&view, wpl_test_vec2(0.0f, 0.0f))
+         == WPL_RESULT_OK);
+  wpl_test_assert_view_near(view, before);
+}
+
+static void
+test_pan_by_overflow_failure_preserves_view(void)
+{
+  WplCanvasView view = {{FLT_MAX, 0.0f}, 1.0f, 0.25f, 16.0f};
+  WplCanvasView before = view;
+
+  assert(wpl_canvas_pan_by(&view, wpl_test_vec2(FLT_MAX, 1.0f))
+         == WPL_RESULT_INVALID_ARGUMENT);
+  wpl_test_assert_view_near(view, before);
+}
+
+static void
+test_zoom_around_identity_factor_preserves_view(void)
+{
+  WplCanvasView view = wpl_test_view(-12.0f, 34.0f, 3.0f);
+  WplCanvasView before = view;
+
+  assert(wpl_canvas_zoom_around(&view, wpl_test_vec2(75.0f, -20.0f), 1.0f)
+         == WPL_RESULT_OK);
+  wpl_test_assert_view_near(view, before);
+}
+
+static void
+test_zoom_around_clamped_bounds_preserve_cursor_anchor(void)
+{
+  WplCanvasView view = {{12.0f, -7.0f}, 2.0f, 1.0f, 4.0f};
+  WplVec2 cursor_screen = wpl_test_vec2(80.0f, 40.0f);
+  WplVec2 before = {0};
+  WplVec2 after = {0};
+
+  assert(wpl_screen_to_canvas(&view, cursor_screen, &before)
+         == WPL_RESULT_OK);
+  assert(wpl_canvas_zoom_around(&view, cursor_screen, 100.0f)
+         == WPL_RESULT_OK);
+  assert(wpl_test_nearly_equal(view.zoom, 4.0f));
+  assert(wpl_screen_to_canvas(&view, cursor_screen, &after)
+         == WPL_RESULT_OK);
+  wpl_test_assert_vec2_near(after, before);
+
+  assert(wpl_canvas_zoom_around(&view, cursor_screen, 0.001f)
+         == WPL_RESULT_OK);
+  assert(wpl_test_nearly_equal(view.zoom, 1.0f));
+  assert(wpl_screen_to_canvas(&view, cursor_screen, &after)
+         == WPL_RESULT_OK);
+  wpl_test_assert_vec2_near(after, before);
+}
+
+static void
+test_zoom_around_invalid_input_preserves_view(void)
+{
+  WplCanvasView view = wpl_test_view(3.0f, 4.0f, 2.0f);
+  WplCanvasView before = view;
+
+  assert(wpl_canvas_zoom_around(&view, wpl_test_vec2(NAN, 0.0f), 2.0f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  wpl_test_assert_view_near(view, before);
+
+  assert(wpl_canvas_zoom_around(&view, wpl_test_vec2(0.0f, 0.0f), 0.0f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  wpl_test_assert_view_near(view, before);
+
+  assert(wpl_canvas_zoom_around(&view, wpl_test_vec2(0.0f, 0.0f), -1.0f)
+         == WPL_RESULT_INVALID_ARGUMENT);
+  wpl_test_assert_view_near(view, before);
+}
+
+static void
 test_invalid_view_and_output_rejected(void)
 {
   WplCanvasView view = wpl_test_view(0.0f, 0.0f, 1.0f);
@@ -434,6 +511,11 @@ main(void)
   test_zoom_around_cursor_anchor();
   test_zoom_around_clamps_to_min_and_max();
   test_zoom_around_failure_preserves_view();
+  test_pan_by_zero_delta_preserves_view();
+  test_pan_by_overflow_failure_preserves_view();
+  test_zoom_around_identity_factor_preserves_view();
+  test_zoom_around_clamped_bounds_preserve_cursor_anchor();
+  test_zoom_around_invalid_input_preserves_view();
   test_invalid_view_and_output_rejected();
   test_nonfinite_inputs_rejected();
   test_invalid_zoom_factor_rejected();
