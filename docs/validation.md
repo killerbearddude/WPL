@@ -60,12 +60,13 @@ trailing-slash atomic paths, temporary-file cleanup, and file-data reset.
 Focused replay validation:
 
 ```sh
-ctest --test-dir build --output-on-failure -R 'wpl_test_replay(_format)?$'
+ctest --test-dir build --output-on-failure -R 'wpl_test_replay(_format|_edges)?$'
 ```
 
 The focused replay targets cover v1 header/frame encoding, malformed input
-rejection, recorder/player validation, zero-frame save/load, multi-frame
-round-trips, and failed-load preservation behavior.
+rejection, recorder/player validation, invalid next-output reset, zero-frame
+save/load, zero-delta round trips, multi-frame round-trips, trailing-byte
+rejection, failed-load preservation, and cursor-preservation behavior.
 
 CI requirements:
 
