@@ -47,6 +47,12 @@ ctest --test-dir build --output-on-failure -R 'wpl_test_debug_overlay$'
 The focused debug overlay target covers append counts, custom line handling,
 capacity failure, truncation rollback, and no-partial-mutation cases.
 
+Focused file I/O validation:
+
+```sh
+ctest --test-dir build --output-on-failure -R 'wpl_test_file_io$'
+```
+
 CI requirements:
 
 - Ubuntu GCC job must pass.
@@ -110,11 +116,11 @@ The script builds WPL in `build-xvfb` and runs the backend window API smoke test
 under `xvfb-run`.  This validates create/pump/render/destroy coverage in a
 headless X11 server without adding new platform scope.
 
-## Lifecycle, Input, Draw, Renderer, Canvas, Debug, Threading, and Timing Contracts
+## Lifecycle, Input, Draw, Renderer, Canvas, Debug, File I/O, Threading, and Timing Contracts
 
 Lifecycle, input, text-input boundary, draw command, software-renderer, canvas
-math, debug overlay, threading, and timing assumptions are part of validation.
-See:
+math, debug overlay, file I/O, threading, and timing assumptions are part of
+validation. See:
 
 - `docs/lifecycle_threading.md`
 - `docs/input_snapshot_contract.md`
@@ -123,6 +129,7 @@ See:
 - `docs/software_renderer_contract.md`
 - `docs/canvas_math_contract.md`
 - `docs/debug_overlay_contract.md`
+- `docs/file_io_contract.md`
 - `docs/timing_frame_contract.md`
 
 Relevant checks for reviewers:
@@ -149,6 +156,9 @@ Relevant checks for reviewers:
 - debug overlay failures do not commit partial overlay appends,
 - debug overlay custom lines do not add widget, layout, graph, or editor policy,
 - debug overlay behavior stays covered by focused validation,
+- file I/O remains whole-file platform infrastructure,
+- file I/O does not add serialization, asset-pipeline, graph, or editor policy,
+- atomic file writes clean up temporary files on validation failures,
 - frame delta stays at the `wpl_begin_frame` boundary,
 - event pumping accumulates into the current frame snapshot,
 - timing uses monotonic clocks,
@@ -306,5 +316,6 @@ Before final PASS:
 - [ ] Focused renderer validation passes.
 - [ ] Focused canvas validation passes.
 - [ ] Focused debug overlay validation passes.
+- [ ] Focused file I/O validation passes.
 - [ ] Replay round-trip tests pass.
 - [ ] README quickstart is verified on a clean Ubuntu-like machine.
