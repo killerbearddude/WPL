@@ -63,6 +63,8 @@ presentation API.
 
 `WplDebugStats` is caller-provided diagnostic data. The overlay formats it into
 text commands. `backend_name == NULL` is accepted and displayed as `unknown`.
+Overly long formatted built-in diagnostic lines, including backend name output,
+return `WPL_RESULT_TRUNCATED` without committing a partial overlay append.
 
 `WplInputState` is read as an already-stable input snapshot. The overlay does not
 poll events, reset transient input, infer text input, interpret editor commands,
@@ -74,6 +76,7 @@ or widen input semantics.
 
 - `lines == NULL` is valid only when `line_count == 0`,
 - each custom line requires non-null `label` and `value`,
+- empty labels and empty values are valid,
 - each custom line is formatted as `label: value`,
 - custom line formatting uses a fixed internal buffer,
 - overly long formatted custom lines return `WPL_RESULT_TRUNCATED`,
@@ -142,11 +145,13 @@ Debug overlay changes should add tests or documented validation for:
 - null backend-name fallback,
 - base overlay command count,
 - custom line command count,
+- empty custom line strings,
 - existing draw command preservation,
 - capacity failure without mutation,
 - large line-count rejection,
 - invalid custom line rejection,
 - truncation failure without mutation,
+- built-in diagnostic truncation rollback,
 - backend-leak checks for public headers.
 
 Current focused debug overlay validation target:
@@ -155,10 +160,16 @@ Current focused debug overlay validation target:
 ctest --test-dir build --output-on-failure -R 'wpl_test_debug_overlay$'
 ```
 
+The focused debug overlay target covers invalid argument rejection, null backend
+fallback, base and custom command counts, empty custom line strings, existing draw
+command preservation, capacity failure without mutation, large line-count
+rejection, invalid custom line rejection, custom line truncation rollback, and
+built-in diagnostic truncation rollback.
+
 Focused debug overlay validation does not replace full CTest, sanitizer
 validation, backend-leak checks, frame-pacing boundary checks, focused draw,
 renderer, canvas validation, or Xvfb smoke validation.
 
-Phase 7a adds this contract document and cross-references. Additional Phase 7
-patches can add edge tests or implementation hardening where concrete coverage
-needs are identified.
+Phase 7a documented this contract. Phase 7b added debug overlay edge coverage.
+Phase 7c syncs this validation documentation and closes the Phase 7 debug overlay
+hardening pass.
