@@ -325,6 +325,102 @@ test_rect_helpers_reject_overflowed_edges(void)
   wpl_test_assert_rect_near(c, (WplRect){0.0f, 0.0f, 0.0f, 0.0f});
 }
 
+static void
+test_rect_contains_fractional_boundaries_and_zero_area(void)
+{
+  WplRect rect = {-2.5f, 3.25f, 4.5f, 2.75f};
+  WplRect zero_width = {1.0f, 2.0f, 0.0f, 3.0f};
+  WplRect zero_height = {1.0f, 2.0f, 3.0f, 0.0f};
+
+  assert(wpl_rect_contains_point(rect, wpl_test_vec2(-2.5f, 3.25f)));
+  assert(wpl_rect_contains_point(rect, wpl_test_vec2(1.999f, 5.999f)));
+  assert(!wpl_rect_contains_point(rect, wpl_test_vec2(2.0f, 5.999f)));
+  assert(!wpl_rect_contains_point(rect, wpl_test_vec2(1.999f, 6.0f)));
+  assert(!wpl_rect_contains_point(rect, wpl_test_vec2(-2.501f, 3.25f)));
+
+  assert(!wpl_rect_contains_point(zero_width, wpl_test_vec2(1.0f, 2.0f)));
+  assert(!wpl_rect_contains_point(zero_height, wpl_test_vec2(1.0f, 2.0f)));
+}
+
+static void
+test_rect_touching_edges_do_not_intersect(void)
+{
+  WplRect a = {0.0f, 0.0f, 10.0f, 10.0f};
+  WplRect right_touch = {10.0f, 2.0f, 5.0f, 5.0f};
+  WplRect left_touch = {-5.0f, 2.0f, 5.0f, 5.0f};
+  WplRect bottom_touch = {2.0f, 10.0f, 5.0f, 5.0f};
+  WplRect top_touch = {2.0f, -5.0f, 5.0f, 5.0f};
+  WplRect c;
+
+  assert(!wpl_rect_intersects(a, right_touch));
+  c = wpl_rect_intersection(a, right_touch);
+  wpl_test_assert_rect_near(c, (WplRect){0.0f, 0.0f, 0.0f, 0.0f});
+
+  assert(!wpl_rect_intersects(a, left_touch));
+  c = wpl_rect_intersection(a, left_touch);
+  wpl_test_assert_rect_near(c, (WplRect){0.0f, 0.0f, 0.0f, 0.0f});
+
+  assert(!wpl_rect_intersects(a, bottom_touch));
+  c = wpl_rect_intersection(a, bottom_touch);
+  wpl_test_assert_rect_near(c, (WplRect){0.0f, 0.0f, 0.0f, 0.0f});
+
+  assert(!wpl_rect_intersects(a, top_touch));
+  c = wpl_rect_intersection(a, top_touch);
+  wpl_test_assert_rect_near(c, (WplRect){0.0f, 0.0f, 0.0f, 0.0f});
+}
+
+static void
+test_rect_intersection_containment_and_negative_coordinates(void)
+{
+  WplRect outer = {-10.0f, -8.0f, 20.0f, 16.0f};
+  WplRect inner = {-5.0f, -4.0f, 3.0f, 2.0f};
+  WplRect partial = {-12.0f, -10.0f, 7.0f, 5.0f};
+  WplRect c;
+
+  assert(wpl_rect_intersects(outer, inner));
+  c = wpl_rect_intersection(outer, inner);
+  wpl_test_assert_rect_near(c, inner);
+
+  assert(wpl_rect_intersects(outer, partial));
+  c = wpl_rect_intersection(outer, partial);
+  wpl_test_assert_rect_near(c, (WplRect){-10.0f, -8.0f, 5.0f, 3.0f});
+}
+
+static void
+test_rect_helpers_treat_invalid_rectangles_as_empty(void)
+{
+  WplRect normal = {0.0f, 0.0f, 10.0f, 10.0f};
+  WplRect zero_width = {0.0f, 0.0f, 0.0f, 10.0f};
+  WplRect zero_height = {0.0f, 0.0f, 10.0f, 0.0f};
+  WplRect negative_height = {0.0f, 0.0f, 10.0f, -1.0f};
+  WplRect nan_rect = {NAN, 0.0f, 10.0f, 10.0f};
+  WplRect infinity_rect = {0.0f, 0.0f, INFINITY, 10.0f};
+  WplRect c;
+
+  assert(!wpl_rect_intersects(zero_width, normal));
+  c = wpl_rect_intersection(zero_width, normal);
+  wpl_test_assert_rect_near(c, (WplRect){0.0f, 0.0f, 0.0f, 0.0f});
+
+  assert(!wpl_rect_intersects(zero_height, normal));
+  c = wpl_rect_intersection(zero_height, normal);
+  wpl_test_assert_rect_near(c, (WplRect){0.0f, 0.0f, 0.0f, 0.0f});
+
+  assert(!wpl_rect_intersects(negative_height, normal));
+  c = wpl_rect_intersection(negative_height, normal);
+  wpl_test_assert_rect_near(c, (WplRect){0.0f, 0.0f, 0.0f, 0.0f});
+
+  assert(!wpl_rect_contains_point(normal, wpl_test_vec2(NAN, 1.0f)));
+  assert(!wpl_rect_contains_point(nan_rect, wpl_test_vec2(1.0f, 1.0f)));
+  assert(!wpl_rect_intersects(nan_rect, normal));
+  c = wpl_rect_intersection(nan_rect, normal);
+  wpl_test_assert_rect_near(c, (WplRect){0.0f, 0.0f, 0.0f, 0.0f});
+
+  assert(!wpl_rect_contains_point(infinity_rect, wpl_test_vec2(1.0f, 1.0f)));
+  assert(!wpl_rect_intersects(infinity_rect, normal));
+  c = wpl_rect_intersection(infinity_rect, normal);
+  wpl_test_assert_rect_near(c, (WplRect){0.0f, 0.0f, 0.0f, 0.0f});
+}
+
 int
 main(void)
 {
@@ -344,5 +440,9 @@ main(void)
   test_rect_contains_point();
   test_rect_intersection_helpers();
   test_rect_helpers_reject_overflowed_edges();
+  test_rect_contains_fractional_boundaries_and_zero_area();
+  test_rect_touching_edges_do_not_intersect();
+  test_rect_intersection_containment_and_negative_coordinates();
+  test_rect_helpers_treat_invalid_rectangles_as_empty();
   return 0;
 }
