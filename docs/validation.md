@@ -38,6 +38,12 @@ ctest --test-dir build --output-on-failure -R 'wpl_test_canvas$'
 The focused canvas target covers coordinate transforms, pan/zoom invariants,
 rectangle edge behavior, invalid-input handling, and failure-preservation cases.
 
+Focused debug overlay validation:
+
+```sh
+ctest --test-dir build --output-on-failure -R 'wpl_test_debug_overlay$'
+```
+
 CI requirements:
 
 - Ubuntu GCC job must pass.
@@ -101,10 +107,11 @@ The script builds WPL in `build-xvfb` and runs the backend window API smoke test
 under `xvfb-run`.  This validates create/pump/render/destroy coverage in a
 headless X11 server without adding new platform scope.
 
-## Lifecycle, Input, Draw, Renderer, Canvas, Threading, and Timing Contracts
+## Lifecycle, Input, Draw, Renderer, Canvas, Debug, Threading, and Timing Contracts
 
 Lifecycle, input, text-input boundary, draw command, software-renderer, canvas
-math, threading, and timing assumptions are part of validation.  See:
+math, debug overlay, threading, and timing assumptions are part of validation.
+See:
 
 - `docs/lifecycle_threading.md`
 - `docs/input_snapshot_contract.md`
@@ -112,6 +119,7 @@ math, threading, and timing assumptions are part of validation.  See:
 - `docs/draw_command_contract.md`
 - `docs/software_renderer_contract.md`
 - `docs/canvas_math_contract.md`
+- `docs/debug_overlay_contract.md`
 - `docs/timing_frame_contract.md`
 
 Relevant checks for reviewers:
@@ -134,6 +142,9 @@ Relevant checks for reviewers:
 - renderer pixel and target-boundary behavior stay covered by focused validation,
 - canvas math stays backend-independent and free of widget/layout/editor policy,
 - canvas coordinate, rectangle, and transform behavior stay covered by focused validation,
+- debug overlay remains append-only draw command generation,
+- debug overlay failures do not commit partial overlay appends,
+- debug overlay custom lines do not add widget, layout, graph, or editor policy,
 - frame delta stays at the `wpl_begin_frame` boundary,
 - event pumping accumulates into the current frame snapshot,
 - timing uses monotonic clocks,
@@ -290,5 +301,6 @@ Before final PASS:
 - [ ] Focused draw command validation passes.
 - [ ] Focused renderer validation passes.
 - [ ] Focused canvas validation passes.
+- [ ] Focused debug overlay validation passes.
 - [ ] Replay round-trip tests pass.
 - [ ] README quickstart is verified on a clean Ubuntu-like machine.
