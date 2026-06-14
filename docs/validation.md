@@ -35,6 +35,9 @@ Focused canvas validation:
 ctest --test-dir build --output-on-failure -R 'wpl_test_canvas$'
 ```
 
+The focused canvas target covers coordinate transforms, pan/zoom invariants,
+rectangle edge behavior, invalid-input handling, and failure-preservation cases.
+
 CI requirements:
 
 - Ubuntu GCC job must pass.
@@ -130,7 +133,7 @@ Relevant checks for reviewers:
 - renderer clipping, framebuffer, and presentation behavior remain documented,
 - renderer pixel and target-boundary behavior stay covered by focused validation,
 - canvas math stays backend-independent and free of widget/layout/editor policy,
-- canvas coordinate and rectangle behavior stay covered by focused validation,
+- canvas coordinate, rectangle, and transform behavior stay covered by focused validation,
 - frame delta stays at the `wpl_begin_frame` boundary,
 - event pumping accumulates into the current frame snapshot,
 - timing uses monotonic clocks,

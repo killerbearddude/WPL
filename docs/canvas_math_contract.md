@@ -68,7 +68,8 @@ Current behavior:
 - valid finite deltas update `pan`,
 - `zoom`, `min_zoom`, and `max_zoom` are preserved,
 - invalid views or non-finite deltas return `WPL_RESULT_INVALID_ARGUMENT`,
-- overflowed pan results are rejected rather than stored.
+- overflowed pan results are rejected rather than stored,
+- failure preserves the original view.
 
 ## Zoom Contract
 
@@ -159,9 +160,15 @@ Current focused canvas validation target:
 ctest --test-dir build --output-on-failure -R 'wpl_test_canvas$'
 ```
 
+The focused canvas target covers coordinate round trips, screen-space pan,
+cursor-anchored zoom, zoom clamping, failure preservation, invalid/non-finite
+inputs, point containment boundary rules, rectangle intersection rules,
+zero-area and negative-size rectangles, non-finite rectangles, overflowed
+rectangle edges, and transform edge behavior.
+
 Focused canvas validation does not replace full CTest, sanitizer validation,
 backend-leak checks, frame-pacing boundary checks, or Xvfb smoke validation.
 
-Phase 6a adds this contract document and cross-references. Additional Phase 6
-patches can add edge tests or implementation hardening where concrete coverage
-needs are identified.
+Phase 6a documented this contract. Phase 6b added rectangle edge coverage. Phase
+6c added pan/zoom transform edge coverage. Phase 6d syncs this validation
+documentation and closes the Phase 6 canvas math hardening pass.
