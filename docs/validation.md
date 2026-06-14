@@ -57,6 +57,16 @@ The focused file I/O targets cover whole-file read/write behavior, atomic
 replacement behavior, and edge cases for directories, zero-size writes,
 trailing-slash atomic paths, temporary-file cleanup, and file-data reset.
 
+Focused replay validation:
+
+```sh
+ctest --test-dir build --output-on-failure -R 'wpl_test_replay(_format)?$'
+```
+
+The focused replay targets cover v1 header/frame encoding, malformed input
+rejection, recorder/player validation, zero-frame save/load, multi-frame
+round-trips, and failed-load preservation behavior.
+
 CI requirements:
 
 - Ubuntu GCC job must pass.
@@ -120,11 +130,11 @@ The script builds WPL in `build-xvfb` and runs the backend window API smoke test
 under `xvfb-run`.  This validates create/pump/render/destroy coverage in a
 headless X11 server without adding new platform scope.
 
-## Lifecycle, Input, Draw, Renderer, Canvas, Debug, File I/O, Threading, and Timing Contracts
+## Lifecycle, Input, Draw, Renderer, Canvas, Debug, File I/O, Replay, Threading, and Timing Contracts
 
 Lifecycle, input, text-input boundary, draw command, software-renderer, canvas
-math, debug overlay, file I/O, threading, and timing assumptions are part of
-validation. See:
+math, debug overlay, file I/O, replay, threading, and timing assumptions are part
+of validation. See:
 
 - `docs/lifecycle_threading.md`
 - `docs/input_snapshot_contract.md`
@@ -134,6 +144,7 @@ validation. See:
 - `docs/canvas_math_contract.md`
 - `docs/debug_overlay_contract.md`
 - `docs/file_io_contract.md`
+- `docs/replay_contract.md`
 - `docs/timing_frame_contract.md`
 
 Relevant checks for reviewers:
@@ -164,6 +175,9 @@ Relevant checks for reviewers:
 - file I/O does not add serialization, asset-pipeline, graph, or editor policy,
 - file I/O behavior stays covered by focused validation,
 - atomic file writes clean up temporary files on validation failures,
+- replay remains at the platform/input snapshot boundary,
+- replay does not add raw event recording, editor command replay, graph state, or application state,
+- replay behavior stays covered by focused validation,
 - frame delta stays at the `wpl_begin_frame` boundary,
 - event pumping accumulates into the current frame snapshot,
 - timing uses monotonic clocks,
@@ -322,5 +336,6 @@ Before final PASS:
 - [ ] Focused canvas validation passes.
 - [ ] Focused debug overlay validation passes.
 - [ ] Focused file I/O validation passes.
+- [ ] Focused replay validation passes.
 - [ ] Replay round-trip tests pass.
 - [ ] README quickstart is verified on a clean Ubuntu-like machine.
