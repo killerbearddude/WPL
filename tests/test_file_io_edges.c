@@ -91,15 +91,6 @@ wpl_test_directory_is_empty(const char* path)
 }
 
 static void
-wpl_test_close_fd(int* fd)
-{
-  if (fd != NULL && *fd >= 0) {
-    close(*fd);
-    *fd = -1;
-  }
-}
-
-static void
 test_read_directory_rejected_and_resets_output(void)
 {
   char dir[sizeof("/tmp/wpl_file_io_edge_dir_XXXXXX")] = {0};
