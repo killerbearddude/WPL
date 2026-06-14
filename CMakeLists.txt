@@ -295,6 +295,17 @@ target_compile_options(wpl_test_file_io PRIVATE
 )
 add_test(NAME wpl_test_file_io COMMAND wpl_test_file_io)
 
+add_executable(wpl_test_file_io_edges
+  tests/test_file_io_edges.c
+)
+target_link_libraries(wpl_test_file_io_edges PRIVATE wpl_core)
+target_compile_options(wpl_test_file_io_edges PRIVATE
+  -Wall
+  -Wextra
+  -Wpedantic
+)
+add_test(NAME wpl_test_file_io_edges COMMAND wpl_test_file_io_edges)
+
 add_executable(wpl_test_replay_format
   tests/test_replay_format.c
 )
